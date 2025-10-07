@@ -126,7 +126,7 @@ function Home({ user }) {
           const { type, data } = payload.new;
 
           if (type === "offer") {
-            // Respond with answer
+            // 👉 Joiner handles offer and replies with answer
             await pc.current.setRemoteDescription(
               new RTCSessionDescription(data)
             );
@@ -157,20 +157,21 @@ function Home({ user }) {
 
     // 4️⃣ Caller sends initial offer
     const startCall = async () => {
-      if (!createdRoomId) return;
-      const offer = await pc.current.createOffer();
-      await pc.current.setLocalDescription(offer);
-      await supabase.from("signals").insert([
-        {
-          room: joinedRoomId,
-          sender: user.id,
-          type: "offer",
-          data: offer,
-        },
-      ]);
+      if (createdRoomId) {
+        const offer = await pc.current.createOffer();
+        await pc.current.setLocalDescription(offer);
+        await supabase.from("signals").insert([
+          {
+            room: joinedRoomId,
+            sender: user.id,
+            type: "offer",
+            data: offer,
+          },
+        ]);
+      }
     };
 
-    // Only first user starts the call
+    // Only the creator (waiting user) starts the call
     startCall();
 
     return () => {
