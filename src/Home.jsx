@@ -73,25 +73,60 @@ function Home({ user }) {
   }, [createdRoomId]);
 
   ///////////////////////////////////////// WebRtc Connection ////////////////////////////////////
-
   useEffect(() => {
     if (!joinedRoomId) return;
+
     pc.current = new RTCPeerConnection({
-      iceServers: [{ urls: "stun:stun.l.google.com:19302" }],
+      iceServers: [
+        {
+          urls: [
+            "stun:stun1.l.google.com:19302",
+            "stun:stun2.l.google.com:19302",
+          ],
+        },
+      ],
     });
+
+    // 🧠 Debug: Watch ICE gathering progress
+    pc.current.onicegatheringstatechange = () => {
+      console.log("ICE gathering state:", pc.current.iceGatheringState);
+    };
 
     /// Local  Video Setup ///
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
-      .then((stream) => {
+      .then(async (stream) => {
+        console.log("🎥 Local stream acquired");
         localVideo.current.srcObject = stream;
         stream
           .getTracks()
           .forEach((track) => pc.current.addTrack(track, stream));
+
+        // ✅ Move offer creation *after* local tracks are added
+        if (createdRoomId) {
+          console.log("📞 Creating offer...");
+          const offer = await pc.current.createOffer();
+          console.log("📡 Offer created");
+          await pc.current.setLocalDescription(offer);
+          console.log("✅ Local description set");
+          await supabase.from("signals").insert([
+            {
+              room: joinedRoomId,
+              sender: user.id,
+              type: "offer",
+              data: offer,
+            },
+          ]);
+          console.log("📨 Offer sent to Supabase");
+        }
+      })
+      .catch((err) => {
+        console.error("❌ Error accessing camera/mic:", err);
       });
 
     /// Handle Remote  Video ///
     pc.current.ontrack = (event) => {
+      console.log("📺 Got remote stream:", event.streams[0]);
       remoteVideo.current.srcObject = event.streams[0];
     };
 
@@ -99,7 +134,7 @@ function Home({ user }) {
     pc.current.onicecandidate = async (event) => {
       console.log("onicecandiate : entered");
       if (event.candidate) {
-        console.log("candidate : ", event.candidate);
+        console.log("🔥 candidate : ", event.candidate);
         await supabase.from("signals").insert([
           {
             room: joinedRoomId,
@@ -108,6 +143,8 @@ function Home({ user }) {
             data: event.candidate.toJSON(),
           },
         ]);
+      } else {
+        console.log("🚫 No more ICE candidates (null)");
       }
     };
 
@@ -128,6 +165,7 @@ function Home({ user }) {
 
           if (type === "offer") {
             // 👉 Joiner handles offer and replies with answer
+            console.log("📥 Received offer from remote user");
             await pc.current.setRemoteDescription(
               new RTCSessionDescription(data)
             );
@@ -141,49 +179,30 @@ function Home({ user }) {
                 data: answer,
               },
             ]);
+            console.log("📤 Sent answer to Supabase");
           } else if (type === "answer") {
+            console.log("📥 Received answer, setting remote description");
             await pc.current.setRemoteDescription(
               new RTCSessionDescription(data)
             );
           } else if (type === "candidate") {
+            console.log("📥 Received candidate:", data);
             try {
               await pc.current.addIceCandidate(new RTCIceCandidate(data));
+              console.log("✅ Added ICE candidate successfully");
             } catch (err) {
-              console.error("Error adding ICE:", err);
+              console.error("❌ Error adding ICE:", err);
             }
           }
         }
       )
       .subscribe();
 
-    // 4️⃣ Caller sends initial offer
-    const startCall = async () => {
-      if (createdRoomId) {
-        console.log("📞 Creating offer...");
-        const offer = await pc.current.createOffer();
-        console.log("📡 Offer created");
-        await pc.current.setLocalDescription(offer);
-        console.log("✅ Local description set");
-        await supabase.from("signals").insert([
-          {
-            room: joinedRoomId,
-            sender: user.id,
-            type: "offer",
-            data: offer,
-          },
-        ]);
-        console.log("📨 Offer sent to Supabase");
-      }
-    };
-
-    // Only the creator (waiting user) starts the call
-    startCall();
-
     return () => {
       supabase.removeChannel(channel);
       pc.current.close();
     };
-  }, [joinedRoomId]);
+  }, [joinedRoomId, createdRoomId]);
 
   //////////////////////////////////// Updating User Status ////////////////////////////////
   useEffect(() => {
