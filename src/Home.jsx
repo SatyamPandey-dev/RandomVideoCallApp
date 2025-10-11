@@ -159,8 +159,11 @@ function Home({ user }) {
     // 4️⃣ Caller sends initial offer
     const startCall = async () => {
       if (createdRoomId) {
+        console.log("📞 Creating offer...");
         const offer = await pc.current.createOffer();
+        console.log("📡 Offer created");
         await pc.current.setLocalDescription(offer);
+        console.log("✅ Local description set");
         await supabase.from("signals").insert([
           {
             room: joinedRoomId,
@@ -169,6 +172,7 @@ function Home({ user }) {
             data: offer,
           },
         ]);
+        console.log("📨 Offer sent to Supabase");
       }
     };
 
