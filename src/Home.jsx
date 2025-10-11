@@ -183,7 +183,7 @@ function Home({ user }) {
       supabase.removeChannel(channel);
       pc.current.close();
     };
-  }, [joinedRoomId, createdRoomId]);
+  }, [joinedRoomId]);
 
   //////////////////////////////////// Updating User Status ////////////////////////////////
   useEffect(() => {
