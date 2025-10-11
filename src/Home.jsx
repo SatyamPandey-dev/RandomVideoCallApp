@@ -97,6 +97,7 @@ function Home({ user }) {
 
     // 2️⃣ Send ICE candidates to Supabase
     pc.current.onicecandidate = async (event) => {
+      console.log("onicecandiate : entered");
       if (event.candidate) {
         console.log("candidate : ", event.candidate);
         await supabase.from("signals").insert([
