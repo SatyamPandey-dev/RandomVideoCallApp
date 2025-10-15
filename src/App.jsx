@@ -75,7 +75,7 @@ export default function App() {
             element={
               <>
                 <Navbar />
-                <Home user={user} className="bg-gray-800" />
+                <Home user={user} />
               </>
             }
           />

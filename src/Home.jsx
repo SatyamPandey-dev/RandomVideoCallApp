@@ -270,6 +270,11 @@ function Home({ user }) {
       }
       /////////////////////// Joining Existing Room ////////////////////////////////
       if (data && data.length > 0) {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .catch((err) => {
+            console.error("Error accessing media devices:", err);
+          });
         const roomId = data[0].room;
         setSecondUserName(data[0].sendername);
         console.log("room found", roomId);
@@ -293,8 +298,13 @@ function Home({ user }) {
         }
         setUserJoined(true);
       }
-      /////////////////////////// Creating A room ////////////////////////////////
+      /////////////////////////// ⁡⁢⁣⁣𝗖𝗿𝗲𝗮𝘁𝗶𝗻𝗴 𝗔 𝗿𝗼𝗼𝗺⁡ ////////////////////////////////
       else {
+        navigator.mediaDevices
+          .getUserMedia({ video: true, audio: true })
+          .catch((err) => {
+            console.error("Error accessing media devices:", err);
+          });
         console.log("No waiting room found , creating a room . . . ");
         const newRoomId = uuidv4();
         const { data: insertData, error: insertError } = await supabase
