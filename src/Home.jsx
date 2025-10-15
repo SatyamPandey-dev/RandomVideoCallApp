@@ -134,6 +134,7 @@ function Home({ user }) {
         track.onended = () => {
           console.warn("⚠️ Remote track ended – user may have gone offline");
           alert("The other user has disconnected or ended the call.");
+          setUserJoined(false);
         };
       });
     };
@@ -150,6 +151,7 @@ function Home({ user }) {
       ) {
         console.warn("⚠️ Peer connection lost or closed");
         alert("The other user went offline or the call ended.");
+        setUserJoined(false);
         // Optionally cleanup remote video
         if (remoteVideo.current) remoteVideo.current.srcObject = null;
       }
@@ -229,6 +231,22 @@ function Home({ user }) {
     };
   }, [joinedRoomId, createdRoomId]);
 
+  ///////////////////////////////////// Cleaning offline users ///////////////////
+  useEffect(() => {
+    if (!userJoined && joinedRoomId) {
+      const cleanUser = async () => {
+        const { error } = await supabase
+          .from("matches")
+          .delete()
+          .eq("room", joinedRoomId);
+
+        if (error) console.error("Cleanup error:", error);
+        else console.log("Cleanup success for rooms:");
+      };
+      cleanUser();
+    }
+  }, [userJoined, joinedRoomId]);
+
   //////////////////////////////////// Updating User Status ////////////////////////////////
   useEffect(() => {
     if (!joinedRoomId) return;
@@ -277,8 +295,6 @@ function Home({ user }) {
       deleteUserMatch();
     };
   }, [joinedRoomId]);
-
-  //////////////////////////////// Cheking other user live or not ///////////////////////////////////////
 
   /////////////////////////////////// Start When Buttom Clicked ///////////////////////////
 
