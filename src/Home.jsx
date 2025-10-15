@@ -144,21 +144,38 @@ function Home({ user }) {
       console.log("📡 Connection state changed:", pc.current.connectionState);
       const state = pc.current.connectionState;
 
-      // 🆕 When best connection established, reattach the latest remote stream
+      // 🆕 When best connection established, reattach remote video only if missing
       if (state === "connected") {
         console.log(
-          "✅ Peer connection is fully connected, refreshing remote video"
+          "✅ Peer connection is fully connected, checking remote video..."
         );
-        const receivers = pc.current.getReceivers();
-        const remoteStreams = receivers
-          .map((r) => (r.track && r.track.kind === "video" ? r.track : null))
-          .filter(Boolean);
-        if (remoteStreams.length > 0) {
-          const stream = new MediaStream(remoteStreams);
-          remoteVideo.current.srcObject = stream;
+
+        // Only rebuild if remote video is not set or empty
+        const currentStream = remoteVideo.current?.srcObject;
+        const noStream =
+          !currentStream ||
+          !(currentStream instanceof MediaStream) ||
+          currentStream.getTracks().length === 0;
+
+        if (noStream) {
           console.log(
-            "🎞️ Remote video stream refreshed after stable connection"
+            "🔄 Remote video missing — attempting to refresh from receivers"
           );
+          const receivers = pc.current.getReceivers().filter((r) => r.track);
+          const newStream = new MediaStream(receivers.map((r) => r.track));
+
+          if (newStream.getTracks().length > 0) {
+            remoteVideo.current.srcObject = newStream;
+            console.log(
+              "🎞️ Remote video stream refreshed after stable connection"
+            );
+          } else {
+            console.warn(
+              "⚠️ No active receiver tracks found to rebuild stream"
+            );
+          }
+        } else {
+          console.log("✅ Remote video already attached — no refresh needed");
         }
       }
 
@@ -170,7 +187,6 @@ function Home({ user }) {
         console.warn("⚠️ Peer connection lost or closed");
         alert("The other user went offline or the call ended.");
         setUserJoined(false);
-        // Optionally cleanup remote video
         if (remoteVideo.current) remoteVideo.current.srcObject = null;
       }
     };
