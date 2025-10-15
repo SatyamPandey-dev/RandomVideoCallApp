@@ -270,11 +270,14 @@ function Home({ user }) {
       }
       /////////////////////// Joining Existing Room ////////////////////////////////
       if (data && data.length > 0) {
-        navigator.mediaDevices
-          .getUserMedia({ video: true, audio: true })
-          .catch((err) => {
-            console.error("Error accessing media devices:", err);
-          });
+        () => {
+          navigator.mediaDevices
+            .getUserMedia({ video: true, audio: true })
+            .catch((err) => {
+              console.error("Error accessing media devices:", err);
+              return;
+            });
+        };
         const roomId = data[0].room;
         setSecondUserName(data[0].sendername);
         console.log("room found", roomId);
@@ -304,6 +307,7 @@ function Home({ user }) {
           .getUserMedia({ video: true, audio: true })
           .catch((err) => {
             console.error("Error accessing media devices:", err);
+            return;
           });
         console.log("No waiting room found , creating a room . . . ");
         const newRoomId = uuidv4();
