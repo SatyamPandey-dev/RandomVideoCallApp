@@ -144,6 +144,24 @@ function Home({ user }) {
       console.log("📡 Connection state changed:", pc.current.connectionState);
       const state = pc.current.connectionState;
 
+      // 🆕 When best connection established, reattach the latest remote stream
+      if (state === "connected") {
+        console.log(
+          "✅ Peer connection is fully connected, refreshing remote video"
+        );
+        const receivers = pc.current.getReceivers();
+        const remoteStreams = receivers
+          .map((r) => (r.track && r.track.kind === "video" ? r.track : null))
+          .filter(Boolean);
+        if (remoteStreams.length > 0) {
+          const stream = new MediaStream(remoteStreams);
+          remoteVideo.current.srcObject = stream;
+          console.log(
+            "🎞️ Remote video stream refreshed after stable connection"
+          );
+        }
+      }
+
       if (
         state === "disconnected" ||
         state === "failed" ||
@@ -241,7 +259,11 @@ function Home({ user }) {
           .eq("room", joinedRoomId);
 
         if (error) console.error("Cleanup error:", error);
-        else console.log("Cleanup success for rooms:");
+        else {
+          console.log("Cleanup success for rooms:");
+          setJoinedRoomId(null);
+          setCreatedRoomId(null);
+        }
       };
       cleanUser();
     }
