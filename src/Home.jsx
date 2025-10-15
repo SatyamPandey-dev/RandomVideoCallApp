@@ -259,7 +259,7 @@ function Home({ user }) {
 
   const getRoom = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({
+      await navigator.mediaDevices.getUserMedia({
         video: true,
         audio: true,
       });
