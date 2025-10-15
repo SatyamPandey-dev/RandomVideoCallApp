@@ -258,12 +258,16 @@ function Home({ user }) {
   /////////////////////////////////// Start When Buttom Clicked ///////////////////////////
 
   const getRoom = async () => {
-    await navigator.mediaDevices
-      .getUserMedia({ video: true, audio: true })
-      .catch((err) => {
-        console.error("Error accessing media devices:", err);
-        return;
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: true,
+        audio: true,
       });
+    } catch (err) {
+      console.error("Error accessing media devices:", err);
+      return; // this stops the entire getRoom() function
+    }
+
     console.log("button clicked");
     try {
       const { data, error } = await supabase
