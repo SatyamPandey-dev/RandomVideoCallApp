@@ -128,6 +128,31 @@ function Home({ user }) {
     pc.current.ontrack = (event) => {
       console.log("📺 Got remote stream:", event.streams[0]);
       remoteVideo.current.srcObject = event.streams[0];
+
+      // 🧩 Detect when remote track stops (peer left or crashed)
+      event.streams[0].getTracks().forEach((track) => {
+        track.onended = () => {
+          console.warn("⚠️ Remote track ended – user may have gone offline");
+          alert("The other user has disconnected or ended the call.");
+        };
+      });
+    };
+
+    // 🧠 Detect connection state changes (WebRTC built-in offline detection)
+    pc.current.onconnectionstatechange = () => {
+      console.log("📡 Connection state changed:", pc.current.connectionState);
+      const state = pc.current.connectionState;
+
+      if (
+        state === "disconnected" ||
+        state === "failed" ||
+        state === "closed"
+      ) {
+        console.warn("⚠️ Peer connection lost or closed");
+        alert("The other user went offline or the call ended.");
+        // Optionally cleanup remote video
+        if (remoteVideo.current) remoteVideo.current.srcObject = null;
+      }
     };
 
     // 2️⃣ Send ICE candidates to Supabase
