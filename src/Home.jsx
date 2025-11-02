@@ -276,6 +276,11 @@ function Home({ user }) {
             "stun:stun2.l.google.com:19302",
           ],
         },
+        {
+          urls: "turn:relay1.expressturn.com:3478",
+          username: "ef-test", // use your own credentials for production
+          credential: "ef-test-pass",
+        },
       ],
     });
 
