@@ -783,21 +783,29 @@ function Home({ user }) {
             </div>
 
             {/* Input Box */}
-            <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
-              <input
-                type="text"
-                placeholder="Type a message..."
-                value={userMessage}
-                onChange={(e) => setUserMessage(e.target.value)}
-                className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
-              />
-              <button
-                onClick={sendMessage}
-                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
-              >
-                Send
-              </button>
-            </div>
+            <form onSubmit={sendMessage}>
+              <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
+                <input
+                  type="text"
+                  placeholder="Type a message..."
+                  value={userMessage}
+                  onChange={(e) => setUserMessage(e.target.value)}
+                  className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
+                />
+                <button
+                  // onClick={sendMessage}
+                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+                >
+                  Send
+                </button>
+                <button className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg">
+                  Next
+                </button>
+                <button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+                  Leave
+                </button>
+              </div>
+            </form>
           </div>
         </div>
       )}
