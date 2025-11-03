@@ -341,8 +341,8 @@ function Home({ user }) {
 
     // 🧠 Detect connection state changes (WebRTC built-in offline detection)
     let retryCount = 0;
-    const MAX_RETRIES = 5;
-    const RETRY_DELAY_MS = 2000;
+    const MAX_RETRIES = 1;
+    const RETRY_DELAY_MS = 1000;
 
     pc.current.onconnectionstatechange = () => {
       const state = pc.current.connectionState;
@@ -384,6 +384,7 @@ function Home({ user }) {
           );
           setUserJoined(false);
           if (remoteVideo.current) remoteVideo.current.srcObject = null;
+          setTrackEnded(true);
         }
       }
     };
@@ -729,9 +730,11 @@ function Home({ user }) {
   }, [joinedRoomId]);
 
   ///////////// trackended ///////////
-  if (trackEnded & userJoined) {
-    leaveRoom();
-  }
+  useEffect(() => {
+    if (trackEnded & userJoined) {
+      leaveRoom();
+    }
+  }, [trackEnded, userJoined]);
 
   ////////////////////// Leave Button ///////////////////////
 
