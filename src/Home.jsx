@@ -9,6 +9,7 @@ function Home({ user }) {
   const [userMessage, setUserMessage] = useState("");
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
+  const [trackEnded, setTrackEnded] = useState(false);
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
   const pc = useRef(null);
@@ -330,8 +331,9 @@ function Home({ user }) {
       // 🧩 Detect when remote track stops (peer left or crashed)
       event.streams[0].getTracks().forEach((track) => {
         track.onended = () => {
-          console.warn("⚠️ Remote track ended – user may have gone offline");
+          // console.warn("⚠️ Remote track ended – user may have gone offline");
           alert("The other user has disconnected or ended the call.");
+          setTrackEnded(true);
           setUserJoined(false);
         };
       });
@@ -725,6 +727,11 @@ function Home({ user }) {
       supabase.removeChannel(channel);
     };
   }, [joinedRoomId]);
+
+  ///////////// trackended ///////////
+  if (trackEnded & userJoined) {
+    leaveRoom();
+  }
 
   ////////////////////// Leave Button ///////////////////////
 
