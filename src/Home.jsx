@@ -681,6 +681,7 @@ function Home({ user }) {
       console.log("error in sending message : ", msgError);
     } else {
       console.log("message updated successfully : ", msgData[0].message);
+      setUserMessage("");
     }
   };
 
@@ -783,7 +784,12 @@ function Home({ user }) {
             </div>
 
             {/* Input Box */}
-            <form onSubmit={sendMessage}>
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                sendMessage();
+              }}
+            >
               <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
                 <input
                   type="text"
