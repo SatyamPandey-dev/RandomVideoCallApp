@@ -725,6 +725,26 @@ function Home({ user }) {
       supabase.removeChannel(channel);
     };
   }, [joinedRoomId]);
+
+  ////////////////////// Leave Button ///////////////////////
+
+  const leaveRoom = async () => {
+    try {
+      const { error } = await supabase
+        .from("matches")
+        .delete()
+        .eq("room", joinedRoomId);
+      if (error) {
+        console.alert("error in leaving room");
+      }
+    } catch (error) {
+      console.log("unexpected error", error);
+    }
+    setUserJoined(false);
+    setCreatedRoomId(null);
+    setJoinedRoomId(null);
+  };
+
   return (
     <div>
       {!userJoined ? (
@@ -807,7 +827,10 @@ function Home({ user }) {
                 <button className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg">
                   Next
                 </button>
-                <button className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg">
+                <button
+                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                  onClick={leaveRoom}
+                >
                   Leave
                 </button>
               </div>
