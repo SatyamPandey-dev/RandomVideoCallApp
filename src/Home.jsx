@@ -3,7 +3,7 @@ import { supabase } from "./supabaseClient";
 import { v4 as uuidv4 } from "uuid";
 import useWebRTC from "./useWebRTC";
 
-function Home({ user }) {
+export default function Home({ user }) {
   const [createdRoomId, setCreatedRoomId] = useState(null);
   const [joinedRoomId, setJoinedRoomId] = useState(null);
   const [userJoined, setUserJoined] = useState(false);
@@ -820,5 +820,3 @@ function Home({ user }) {
     </div>
   );
 }
-
-export default Home;
