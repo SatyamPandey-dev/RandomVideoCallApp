@@ -732,14 +732,6 @@ function Home({ user }) {
     };
   }, [joinedRoomId]);
 
-  ///////////// trackended ///////////
-  useEffect(() => {
-    if (trackEnded && userJoined) {
-      leaveRoom();
-      getRoom();
-    }
-  }, [trackEnded, userJoined]);
-
   ////////////////////// Next Button ////////////////////
 
   const nextRoom = async () => {
