@@ -10,6 +10,7 @@ function Home({ user }) {
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
   const [trackEnded, setTrackEnded] = useState(false);
+  const [count, setCount] = useState(0);
   const isManualLeaveRef = useRef(false);
 
   const localVideo = useRef(null);
@@ -18,7 +19,7 @@ function Home({ user }) {
 
   useEffect(() => {
     if (!createdRoomId) return;
-    let count = 0;
+
     let intervalId; // declare here so it's in scope
 
     const checkJoin = async () => {
@@ -71,7 +72,7 @@ function Home({ user }) {
       const { error: deleteError } = await supabase
         .from("matches")
         .delete()
-        .eq("room", joinedRoomId)
+        .eq("room", createdRoomId)
         .eq("sender", user.id);
 
       if (deleteError) {
@@ -85,7 +86,7 @@ function Home({ user }) {
       console.log("Checking room:", createdRoomId);
       checkJoin();
       console.log(count);
-      count = +1;
+      setCount(+1);
     }, 2000);
 
     if (count > 5) {
