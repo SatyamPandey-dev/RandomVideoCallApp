@@ -756,6 +756,7 @@ function Home({ user }) {
 
   const leaveRoom = async () => {
     try {
+      if (!joinedRoomId) return;
       const { error } = await supabase
         .from("matches")
         .delete()
