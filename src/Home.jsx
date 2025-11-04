@@ -774,100 +774,110 @@ function Home({ user }) {
 
   return (
     <div>
-      {!userJoined ? (
+      {/* {!userJoined ? (
         <div className=" flex flex-col justify-center items-center p-3  ">
           <button onClick={getRoom} className="p-2 px-5 rounded-sm bg-blue-500">
             Connect
           </button>
         </div>
-      ) : (
-        <div className=" flex flex-col justify-center items-center p-3  ">
-          <div className="flex flex-col    text-white ">
-            <h1>{secondUserName}</h1>
-            <div className="flex gap-2">
+      ) : ( */}
+      <div className=" flex flex-col justify-center items-center p-3  ">
+        <div className="flex flex-col    text-white ">
+          {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
+
+          <div className="flex gap-2">
+            <video
+              ref={localVideo}
+              autoPlay
+              playsInline
+              muted
+              className="w-1/2 border"
+            />
+            {!userJoined ? (
               <video
                 ref={localVideo}
                 autoPlay
                 playsInline
-                muted
                 className="w-1/2 border"
               />
+            ) : (
               <video
-                ref={remoteVideo}
+                ref={remoteVideoVideo}
                 autoPlay
                 playsInline
                 className="w-1/2 border"
               />
-            </div>
-            {/* Chat Messages */}
-            <div className="flex flex-col overflow-y-auto h-[200px]  space-y-3 bg-[#e1b6b0] ">
-              {message.map((msg, i) => {
-                const time = new Date(msg.createdat).toISOString([], {
-                  hour: "2-digit",
-                  minute: "2-digit",
-                });
+            )}
+          </div>
+          {/* Chat Messages */}
+          <div className="flex flex-col overflow-y-auto h-[200px]  space-y-3 bg-[#e1b6b0] ">
+            {message.map((msg, i) => {
+              const time = new Date(msg.createdat).toISOString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+              });
 
-                return (
+              return (
+                <div
+                  key={i}
+                  className={`flex  ${
+                    msg.user === user.id ? "justify-end" : "justify-start"
+                  }`}
+                >
                   <div
-                    key={i}
-                    className={`flex  ${
-                      msg.user === user.id ? "justify-end" : "justify-start"
-                    }`}
-                  >
-                    <div
-                      className={`max-w-xs px-4 py-2 rounded-2xl shadow flex-col
+                    className={`max-w-xs px-4 py-2 rounded-2xl shadow flex-col
                 ${
                   msg.user === user.id
                     ? "bg-blue-500 text-white"
                     : "bg-purple-500 text-white"
                 }`}
-                    >
-                      {msg.message}
-                      <div className="text-white text-[10px]">{time}</div>
-                    </div>
+                  >
+                    {msg.message}
+                    <div className="text-white text-[10px]">{time}</div>
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Input Box */}
-            <form
-              onSubmit={(e) => {
-                e.preventDefault();
-                sendMessage();
-              }}
-            >
-              <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
-                <input
-                  type="text"
-                  placeholder="Type a message..."
-                  value={userMessage}
-                  onChange={(e) => setUserMessage(e.target.value)}
-                  className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
-                />
-                <button
-                  // onClick={sendMessage}
-                  className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
-                >
-                  Send
-                </button>
-                <button
-                  className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg"
-                  onClick={nextRoom}
-                >
-                  Next
-                </button>
-                <button
-                  className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
-                  onClick={leaveRoom}
-                >
-                  Leave
-                </button>
-              </div>
-            </form>
+                </div>
+              );
+            })}
           </div>
+
+          {/* Input Box */}
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              sendMessage();
+            }}
+          >
+            <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
+              <input
+                type="text"
+                placeholder="Type a message..."
+                value={userMessage}
+                onChange={(e) => setUserMessage(e.target.value)}
+                className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white focus:outline-none"
+              />
+              <button
+                // onClick={sendMessage}
+                className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
+              >
+                Send
+              </button>
+              <button
+                className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg"
+                onClick={nextRoom}
+              >
+                Next
+              </button>
+              <button
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                onClick={leaveRoom}
+              >
+                Leave
+              </button>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
+      {/* )} */}
     </div>
   );
 }
