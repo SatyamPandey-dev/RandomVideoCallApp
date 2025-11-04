@@ -80,6 +80,7 @@ function Home({ user }) {
         console.error("❌ Error deleting match on exit:", deleteError.message);
       } else {
         console.log("✅ Deleted user match for room:", joinedRoomId);
+        alert("No one is currently alive , plz retry after few seconds");
       }
       clearInterval(intervalId);
     };
@@ -91,7 +92,6 @@ function Home({ user }) {
       count = count + 1;
       if (count > 5) {
         deleteUserMatch();
-        alert("No one is currently alive , plz retry after few seconds");
       }
     }, 2000);
 
