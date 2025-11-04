@@ -732,6 +732,12 @@ function Home({ user }) {
     };
   }, [joinedRoomId]);
 
+  //////////////////// track //////////
+  if (trackEnded) {
+    nextRoom();
+    setTrackEnded(false);
+  }
+
   ////////////////////// Next Button ////////////////////
 
   const nextRoom = async () => {
