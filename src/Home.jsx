@@ -18,7 +18,7 @@ function Home({ user }) {
 
   useEffect(() => {
     if (!createdRoomId) return;
-
+    let count = 0;
     let intervalId; // declare here so it's in scope
 
     const checkJoin = async () => {
@@ -67,10 +67,30 @@ function Home({ user }) {
       }
     };
 
+    const deleteUserMatch = async () => {
+      const { error: deleteError } = await supabase
+        .from("matches")
+        .delete()
+        .eq("room", joinedRoomId)
+        .eq("sender", user.id);
+
+      if (deleteError) {
+        console.error("❌ Error deleting match on exit:", deleteError.message);
+      } else {
+        console.log("✅ Deleted user match for room:", joinedRoomId);
+      }
+    };
+
     intervalId = setInterval(() => {
       console.log("Checking room:", createdRoomId);
       checkJoin();
+      count++;
     }, 2000);
+
+    if (count > 5) {
+      deleteUserMatch();
+      console.alert("No one is currently alive , plz retry after few seconds");
+    }
 
     return () => clearInterval(intervalId);
   }, [createdRoomId]);
@@ -378,23 +398,6 @@ function Home({ user }) {
     // cleanup → stop interval + delete row
     return () => {
       clearInterval(intervalId);
-
-      const deleteUserMatch = async () => {
-        const { error: deleteError } = await supabase
-          .from("matches")
-          .delete()
-          .eq("room", joinedRoomId)
-          .eq("sender", user.id);
-
-        if (deleteError) {
-          console.error(
-            "❌ Error deleting match on exit:",
-            deleteError.message
-          );
-        } else {
-          console.log("✅ Deleted user match for room:", joinedRoomId);
-        }
-      };
 
       // deleteUserMatch();
     };
