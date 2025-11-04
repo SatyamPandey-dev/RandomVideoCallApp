@@ -381,7 +381,7 @@ function Home({ user }) {
     try {
       const { data, error } = await supabase
         .from("matches")
-        .select("room, sendername")
+        .select("room, sendername,sender")
         .eq("type", "waiting")
         .limit(1);
       if (error) {
@@ -389,6 +389,11 @@ function Home({ user }) {
       }
       /////////////////////// Joining Existing Room ////////////////////////////////
       if (data && data.length > 0) {
+        if (data[0].sender == user.id) {
+          console.log("✅ already joined");
+          await deleteUserMatch();
+          console.log("retring");
+        }
         const roomId = data[0].room;
         setSecondUserName(data[0].sendername);
         console.log("room found", roomId);
@@ -414,24 +419,6 @@ function Home({ user }) {
       }
       /////////////////////////// ⁡⁢⁣⁣𝗖𝗿𝗲𝗮𝘁𝗶𝗻𝗴 𝗔 𝗿𝗼𝗼𝗺⁡ ////////////////////////////////
       else {
-        const { data, error } = await supabase
-          .from("matches")
-          .select("sender, type")
-          .eq("sender", user.id)
-          .eq("type", "waiting")
-          .limit(1);
-
-        if (error) {
-          console.log("error in checking same room ", error.message);
-          return;
-        }
-
-        if (data && data.length > 0) {
-          console.log("✅ already joined");
-          await deleteUserMatch();
-          console.log("retring");
-        }
-
         console.log("No waiting room found , creating a room . . . ");
         const newRoomId = uuidv4();
         const { data: insertData, error: insertError } = await supabase
