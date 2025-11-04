@@ -84,7 +84,8 @@ function Home({ user }) {
     intervalId = setInterval(() => {
       console.log("Checking room:", createdRoomId);
       checkJoin();
-      count++;
+      console.log(count);
+      count = +1;
     }, 2000);
 
     if (count > 5) {
