@@ -10,8 +10,9 @@ function Home({ user }) {
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
   const [trackEnded, setTrackEnded] = useState(false);
-  const [count, setCount] = useState(0);
+
   const isManualLeaveRef = useRef(false);
+  var count = 0;
 
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
@@ -86,7 +87,7 @@ function Home({ user }) {
       console.log("Checking room:", createdRoomId);
       checkJoin();
       console.log("count :", count);
-      setCount(count + 1);
+      count = count + 1;
     }, 2000);
 
     if (count > 5) {
