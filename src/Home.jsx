@@ -100,6 +100,217 @@ function Home({ user }) {
 
   ///////////////////////////////////////// WebRtc Connection ////////////////////////////////////
 
+  // useEffect(() => {
+  //   if (!joinedRoomId) return;
+
+  //   pc.current = new RTCPeerConnection({
+  //     iceServers: [
+  //       {
+  //         urls: [
+  //           "stun:stun1.l.google.com:19302",
+  //           "stun:stun2.l.google.com:19302",
+  //         ],
+  //       },
+  //       {
+  //         urls: "turn:relay1.expressturn.com:3478",
+  //         username: "ef-test",
+  //         credential: "ef-test-pass",
+  //       },
+  //     ],
+  //   });
+
+  //   // ✅ Improvement #1: ICE Gathering Debug
+  //   pc.current.onicegatheringstatechange = () => {
+  //     console.log("ICE gathering state:", pc.current.iceGatheringState);
+  //   };
+
+  //   /// Local Video Setup ///
+  //   navigator.mediaDevices
+  //     .getUserMedia({ video: true, audio: true })
+  //     .then(async (stream) => {
+  //       console.log("🎥 Local stream acquired");
+  //       localVideo.current.srcObject = stream;
+
+  //       stream
+  //         .getTracks()
+  //         .forEach((track) => pc.current.addTrack(track, stream));
+
+  //       // ✅ Offer created *after* tracks are added
+  //       if (createdRoomId) {
+  //         console.log("📞 Creating offer...");
+  //         const offer = await pc.current.createOffer();
+  //         await pc.current.setLocalDescription(offer);
+  //         console.log("✅ Local description set");
+
+  //         await supabase.from("signals").insert([
+  //           {
+  //             room: joinedRoomId,
+  //             sender: user.id,
+  //             type: "offer",
+  //             data: offer,
+  //           },
+  //         ]);
+  //         console.log("📨 Offer sent to Supabase");
+  //       }
+  //     })
+  //     .catch((err) => console.error("❌ Error accessing camera/mic:", err));
+
+  //   /// Handle Remote Video ///
+  //   pc.current.ontrack = (event) => {
+  //     console.log("📺 Got remote stream:", event.streams[0]);
+  //     remoteVideo.current.srcObject = event.streams[0];
+
+  //     event.streams[0].getTracks().forEach((track) => {
+  //       track.onended = () => {
+  //         console.log("Remote user left – closing stream");
+  //         setTrackEnded(true);
+  //         setUserJoined(false);
+  //       };
+  //     });
+  //   };
+
+  //   // ✅ Improvement #2: ICE queue logic
+  //   let candidateQueue = [];
+  //   let remoteDescriptionSet = false;
+
+  //   // ✅ Connection State Logic
+  //   let retryCount = 0;
+  //   const MAX_RETRIES = 1;
+  //   const RETRY_DELAY_MS = 1000;
+
+  //   pc.current.onconnectionstatechange = () => {
+  //     const state = pc.current.connectionState;
+  //     console.log("📡 Connection state changed:", state);
+
+  //     if (state === "connected") {
+  //       retryCount = 0;
+  //       console.log("✅ Peer connection established");
+  //     }
+
+  //     if (
+  //       state === "closed" ||
+  //       state === "disconnected" ||
+  //       state === "failed"
+  //     ) {
+  //       console.warn("⚠️ Peer disconnected or failed");
+
+  //       if (!trackEnded && userJoined) {
+  //         setTrackEnded(true);
+  //       }
+
+  //       return;
+  //     }
+  //   };
+
+  //   // ✅ Send ICE Candidates
+  //   pc.current.onicecandidate = async (event) => {
+  //     if (event.candidate) {
+  //       console.log("🔥 Sending ICE candidate:", event.candidate);
+  //       await supabase.from("signals").insert([
+  //         {
+  //           room: joinedRoomId,
+  //           sender: user.id,
+  //           type: "candidate",
+  //           data: event.candidate.toJSON(),
+  //         },
+  //       ]);
+  //     } else {
+  //       console.log("🚫 No more ICE candidates (null)");
+  //     }
+  //   };
+
+  //   // ✅ Listen Signals
+  //   const channel = supabase
+  //     .channel("signal-listener")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "INSERT",
+  //         schema: "public",
+  //         table: "signals",
+  //         filter: `room=eq.${joinedRoomId}`,
+  //       },
+  //       async (payload) => {
+  //         if (payload.new.sender === user.id) return;
+
+  //         const { type, data } = payload.new;
+
+  //         if (type === "offer") {
+  //           console.log("📥 Received offer");
+  //           await pc.current.setRemoteDescription(
+  //             new RTCSessionDescription(data)
+  //           );
+  //           remoteDescriptionSet = true;
+
+  //           const answer = await pc.current.createAnswer();
+  //           await pc.current.setLocalDescription(answer);
+
+  //           await supabase.from("signals").insert([
+  //             {
+  //               room: joinedRoomId,
+  //               sender: user.id,
+  //               type: "answer",
+  //               data: answer,
+  //             },
+  //           ]);
+
+  //           // ✅ Flush queued ICE
+  //           for (const c of candidateQueue) {
+  //             try {
+  //               await pc.current.addIceCandidate(new RTCIceCandidate(c));
+  //               console.log("✅ Added queued ICE");
+  //             } catch (e) {
+  //               console.error("❌ Error adding queued ICE:", e);
+  //             }
+  //           }
+  //           candidateQueue = [];
+  //         }
+
+  //         if (type === "answer") {
+  //           console.log("📥 Received answer");
+  //           await pc.current.setRemoteDescription(
+  //             new RTCSessionDescription(data)
+  //           );
+  //           remoteDescriptionSet = true;
+
+  //           for (const c of candidateQueue) {
+  //             try {
+  //               await pc.current.addIceCandidate(new RTCIceCandidate(c));
+  //             } catch (e) {
+  //               console.error("❌ Error adding queued ICE:", e);
+  //             }
+  //           }
+  //           candidateQueue = [];
+  //         }
+
+  //         if (type === "candidate") {
+  //           console.log("📥 Received ICE:", data);
+
+  //           if (!remoteDescriptionSet) {
+  //             console.warn(
+  //               "⚠️ Queuing ICE because remote description not set yet"
+  //             );
+  //             candidateQueue.push(data);
+  //             return;
+  //           }
+
+  //           try {
+  //             await pc.current.addIceCandidate(new RTCIceCandidate(data));
+  //             console.log("✅ Added ICE candidate successfully");
+  //           } catch (err) {
+  //             console.error("❌ Error adding ICE:", err);
+  //           }
+  //         }
+  //       }
+  //     )
+  //     .subscribe();
+
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //     if (pc.current) pc.current.close();
+  //   };
+  // }, [joinedRoomId, createdRoomId]);
+
   useEffect(() => {
     if (!joinedRoomId) return;
 
@@ -119,7 +330,7 @@ function Home({ user }) {
       ],
     });
 
-    // ✅ Improvement #1: ICE Gathering Debug
+    // Debug: ICE gathering
     pc.current.onicegatheringstatechange = () => {
       console.log("ICE gathering state:", pc.current.iceGatheringState);
     };
@@ -135,22 +346,71 @@ function Home({ user }) {
           .getTracks()
           .forEach((track) => pc.current.addTrack(track, stream));
 
-        // ✅ Offer created *after* tracks are added
+        // -----------------------
+        // Offer logic: DELAY + RETRY
+        // -----------------------
+        // Only run offer flow if this client created the room (createdRoomId present)
         if (createdRoomId) {
-          console.log("📞 Creating offer...");
-          const offer = await pc.current.createOffer();
-          await pc.current.setLocalDescription(offer);
-          console.log("✅ Local description set");
+          // small delay so the remote can subscribe to signals
+          await new Promise((r) => setTimeout(r, 1200));
 
-          await supabase.from("signals").insert([
-            {
-              room: joinedRoomId,
-              sender: user.id,
-              type: "offer",
-              data: offer,
-            },
-          ]);
-          console.log("📨 Offer sent to Supabase");
+          let offerRetries = 0;
+          const MAX_OFFER_RETRIES = 3;
+          const OFFER_RETRY_DELAY_MS = 2000;
+
+          const sendOffer = async () => {
+            try {
+              console.log("📞 Creating offer...");
+              const offer = await pc.current.createOffer();
+              await pc.current.setLocalDescription(offer);
+              console.log("✅ Local description set (offer)");
+
+              await supabase.from("signals").insert([
+                {
+                  room: joinedRoomId,
+                  sender: user.id,
+                  type: "offer",
+                  data: offer,
+                },
+              ]);
+              console.log("📨 Offer sent to Supabase");
+            } catch (err) {
+              console.error("❌ Error creating/sending offer:", err);
+            }
+          };
+
+          // first attempt
+          await sendOffer();
+
+          // auto-retry: if no remoteDescription (answer) after timeout, resend offer
+          const offerRetryTimer = setInterval(async () => {
+            if (!pc.current) {
+              clearInterval(offerRetryTimer);
+              return;
+            }
+
+            // remote description is set when we receive an answer
+            const hasRemote = !!pc.current.remoteDescription;
+            if (hasRemote) {
+              clearInterval(offerRetryTimer);
+              return;
+            }
+
+            if (offerRetries < MAX_OFFER_RETRIES) {
+              offerRetries++;
+              console.warn(
+                `⏳ No answer yet — resending offer (attempt ${offerRetries})`
+              );
+              await sendOffer();
+            } else {
+              console.error(
+                "🚨 No answer after retries — giving up offer retries"
+              );
+              clearInterval(offerRetryTimer);
+            }
+          }, OFFER_RETRY_DELAY_MS);
+          // store timer on pc so cleanup can clear it if component unmounts
+          pc.current._offerRetryTimer = offerRetryTimer;
         }
       })
       .catch((err) => console.error("❌ Error accessing camera/mic:", err));
@@ -169,11 +429,13 @@ function Home({ user }) {
       });
     };
 
-    // ✅ Improvement #2: ICE queue logic
+    // -----------------------
+    // ICE queue logic (guaranteed flush)
+    // -----------------------
     let candidateQueue = [];
     let remoteDescriptionSet = false;
 
-    // ✅ Connection State Logic
+    // Connection state
     let retryCount = 0;
     const MAX_RETRIES = 1;
     const RETRY_DELAY_MS = 1000;
@@ -197,29 +459,32 @@ function Home({ user }) {
         if (!trackEnded && userJoined) {
           setTrackEnded(true);
         }
-
         return;
       }
     };
 
-    // ✅ Send ICE Candidates
+    // Send ICE candidates to Supabase (always send — remote will add them when ready)
     pc.current.onicecandidate = async (event) => {
       if (event.candidate) {
         console.log("🔥 Sending ICE candidate:", event.candidate);
-        await supabase.from("signals").insert([
-          {
-            room: joinedRoomId,
-            sender: user.id,
-            type: "candidate",
-            data: event.candidate.toJSON(),
-          },
-        ]);
+        try {
+          await supabase.from("signals").insert([
+            {
+              room: joinedRoomId,
+              sender: user.id,
+              type: "candidate",
+              data: event.candidate.toJSON(),
+            },
+          ]);
+        } catch (err) {
+          console.error("❌ Failed to send ICE to Supabase:", err);
+        }
       } else {
         console.log("🚫 No more ICE candidates (null)");
       }
     };
 
-    // ✅ Listen Signals
+    // Listen to incoming signals
     const channel = supabase
       .channel("signal-listener")
       .on(
@@ -231,84 +496,154 @@ function Home({ user }) {
           filter: `room=eq.${joinedRoomId}`,
         },
         async (payload) => {
-          if (payload.new.sender === user.id) return;
+          try {
+            if (!payload?.new) return;
+            if (payload.new.sender === user.id) return;
 
-          const { type, data } = payload.new;
+            const { type, data } = payload.new;
 
-          if (type === "offer") {
-            console.log("📥 Received offer");
-            await pc.current.setRemoteDescription(
-              new RTCSessionDescription(data)
-            );
-            remoteDescriptionSet = true;
-
-            const answer = await pc.current.createAnswer();
-            await pc.current.setLocalDescription(answer);
-
-            await supabase.from("signals").insert([
-              {
-                room: joinedRoomId,
-                sender: user.id,
-                type: "answer",
-                data: answer,
-              },
-            ]);
-
-            // ✅ Flush queued ICE
-            for (const c of candidateQueue) {
-              try {
-                await pc.current.addIceCandidate(new RTCIceCandidate(c));
-                console.log("✅ Added queued ICE");
-              } catch (e) {
-                console.error("❌ Error adding queued ICE:", e);
-              }
-            }
-            candidateQueue = [];
-          }
-
-          if (type === "answer") {
-            console.log("📥 Received answer");
-            await pc.current.setRemoteDescription(
-              new RTCSessionDescription(data)
-            );
-            remoteDescriptionSet = true;
-
-            for (const c of candidateQueue) {
-              try {
-                await pc.current.addIceCandidate(new RTCIceCandidate(c));
-              } catch (e) {
-                console.error("❌ Error adding queued ICE:", e);
-              }
-            }
-            candidateQueue = [];
-          }
-
-          if (type === "candidate") {
-            console.log("📥 Received ICE:", data);
-
-            if (!remoteDescriptionSet) {
-              console.warn(
-                "⚠️ Queuing ICE because remote description not set yet"
+            if (type === "offer") {
+              console.log("📥 Received offer");
+              // set remote description (await this)
+              await pc.current.setRemoteDescription(
+                new RTCSessionDescription(data)
               );
-              candidateQueue.push(data);
-              return;
-            }
+              remoteDescriptionSet = true;
+              console.log("✅ Remote description (offer) set");
 
-            try {
-              await pc.current.addIceCandidate(new RTCIceCandidate(data));
-              console.log("✅ Added ICE candidate successfully");
-            } catch (err) {
-              console.error("❌ Error adding ICE:", err);
+              // create & send answer
+              const answer = await pc.current.createAnswer();
+              await pc.current.setLocalDescription(answer);
+
+              await supabase.from("signals").insert([
+                {
+                  room: joinedRoomId,
+                  sender: user.id,
+                  type: "answer",
+                  data: answer,
+                },
+              ]);
+              console.log("📤 Sent answer to Supabase");
+
+              // flush any queued ICE candidates
+              if (candidateQueue.length) {
+                console.log(
+                  `📦 Flushing ${candidateQueue.length} queued ICE candidates`
+                );
+                for (const c of candidateQueue) {
+                  try {
+                    await pc.current.addIceCandidate(new RTCIceCandidate(c));
+                  } catch (e) {
+                    console.error("❌ Error adding queued ICE:", e);
+                  }
+                }
+                candidateQueue = [];
+              }
+            } else if (type === "answer") {
+              console.log("📥 Received answer");
+              await pc.current.setRemoteDescription(
+                new RTCSessionDescription(data)
+              );
+              remoteDescriptionSet = true;
+              console.log("✅ Remote description (answer) set");
+
+              // flush queued ICE candidates
+              if (candidateQueue.length) {
+                console.log(
+                  `📦 Flushing ${candidateQueue.length} queued ICE candidates`
+                );
+                for (const c of candidateQueue) {
+                  try {
+                    await pc.current.addIceCandidate(new RTCIceCandidate(c));
+                  } catch (e) {
+                    console.error("❌ Error adding queued ICE:", e);
+                  }
+                }
+                candidateQueue = [];
+              }
+            } else if (type === "candidate") {
+              // incoming ICE
+              console.log("📥 Received ICE:", data);
+
+              // If remote description is not set yet, queue the ICE safely.
+              // But also set up a fallback waiter which will add it once remote description exists.
+              if (!remoteDescriptionSet && !pc.current.remoteDescription) {
+                console.warn(
+                  "⚠️ Queuing ICE because remote description not set yet"
+                );
+                candidateQueue.push(data);
+
+                // safety: periodically check and flush this candidate if remote description becomes available
+                const waiter = setInterval(async () => {
+                  if (!pc.current) {
+                    clearInterval(waiter);
+                    return;
+                  }
+                  if (pc.current.remoteDescription) {
+                    clearInterval(waiter);
+                    try {
+                      // flush all queued at that time (we'll flush in the normal code path too)
+                      for (const c of candidateQueue) {
+                        await pc.current.addIceCandidate(
+                          new RTCIceCandidate(c)
+                        );
+                      }
+                      candidateQueue = [];
+                      console.log("✅ Flushed queued ICE (via waiter)");
+                    } catch (e) {
+                      console.error(
+                        "❌ Error flushing queued ICE via waiter:",
+                        e
+                      );
+                    }
+                  }
+                }, 150);
+                // stop the waiter automatically after a timeout to avoid infinite intervals
+                setTimeout(() => clearInterval(waiter), 20000);
+                return;
+              }
+
+              try {
+                await pc.current.addIceCandidate(new RTCIceCandidate(data));
+                console.log("✅ Added ICE candidate successfully");
+              } catch (err) {
+                console.error("❌ Error adding ICE:", err);
+                // if addIceCandidate failed and remote description not set, queue and let the waiter/flush handle
+                if (!pc.current.remoteDescription) {
+                  candidateQueue.push(data);
+                }
+              }
             }
+          } catch (e) {
+            console.error("❌ Error processing signal payload:", e);
           }
         }
       )
       .subscribe();
 
+    // cleanup
     return () => {
-      supabase.removeChannel(channel);
-      if (pc.current) pc.current.close();
+      try {
+        supabase.removeChannel(channel);
+      } catch (e) {
+        console.warn("Failed to remove channel:", e);
+      }
+
+      // clear offer retry timer if present
+      try {
+        if (pc.current?._offerRetryTimer) {
+          clearInterval(pc.current._offerRetryTimer);
+        }
+      } catch (e) {}
+
+      if (pc.current) {
+        try {
+          pc.current.close();
+        } catch (e) {}
+        pc.current = null;
+      }
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [joinedRoomId, createdRoomId]);
 
   //////////////////////////////////////////////////////////////////////////////
