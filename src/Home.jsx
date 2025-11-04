@@ -595,7 +595,7 @@ function Home({ user }) {
       console.log("Unexpected error:", error);
     } finally {
       // Reset the flag after a short delay
-      setTimeout(() => setIsManualLeave(false), 500);
+      setTimeout(() => setIsManualLeave(false), 1000);
     }
   };
 
