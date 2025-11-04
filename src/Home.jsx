@@ -803,7 +803,7 @@ function Home({ user }) {
               />
             ) : (
               <video
-                ref={remoteVideoVideo}
+                ref={remoteVideo}
                 autoPlay
                 playsInline
                 className="w-1/2 border"
