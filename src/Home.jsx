@@ -331,8 +331,7 @@ function Home({ user }) {
       // 🧩 Detect when remote track stops (peer left or crashed)
       event.streams[0].getTracks().forEach((track) => {
         track.onended = () => {
-          // console.warn("⚠️ Remote track ended – user may have gone offline");
-          alert("The other user has disconnected or ended the call.");
+          console.log("The other user has disconnected or ended the call.");
           setTrackEnded(true);
           setUserJoined(false);
         };
@@ -384,8 +383,8 @@ function Home({ user }) {
           );
 
           setUserJoined(false);
-          if (remoteVideo.current) remoteVideo.current.srcObject = null;
           setTrackEnded(true);
+          if (remoteVideo.current) remoteVideo.current.srcObject = null;
         }
       }
     };
@@ -520,24 +519,25 @@ function Home({ user }) {
   }, [joinedRoomId, createdRoomId]);
 
   ///////////////////////////////////// Cleaning offline users ///////////////////
-  useEffect(() => {
-    if (!userJoined && joinedRoomId) {
-      const cleanUser = async () => {
-        const { error } = await supabase
-          .from("matches")
-          .delete()
-          .eq("room", joinedRoomId);
 
-        if (error) console.error("Cleanup error:", error);
-        else {
-          console.log("Cleanup success for rooms:");
-          setJoinedRoomId(null);
-          setCreatedRoomId(null);
-        }
-      };
-      cleanUser();
-    }
-  }, [userJoined, joinedRoomId]);
+  // useEffect(() => {
+  //   if (!userJoined && joinedRoomId) {
+  //     const cleanUser = async () => {
+  //       const { error } = await supabase
+  //         .from("matches")
+  //         .delete()
+  //         .eq("room", joinedRoomId);
+
+  //       if (error) console.error("Cleanup error:", error);
+  //       else {
+  //         console.log("Cleanup success for rooms:");
+  //         setJoinedRoomId(null);
+  //         setCreatedRoomId(null);
+  //       }
+  //     };
+  //     cleanUser();
+  //   }
+  // }, [userJoined, joinedRoomId]);
 
   //////////////////////////////////// Updating User Status ////////////////////////////////
   useEffect(() => {
@@ -584,7 +584,7 @@ function Home({ user }) {
         }
       };
 
-      deleteUserMatch();
+      // deleteUserMatch();
     };
   }, [joinedRoomId]);
 
@@ -754,15 +754,16 @@ function Home({ user }) {
         .from("matches")
         .delete()
         .eq("room", joinedRoomId);
+
+      setUserJoined(false);
+      setCreatedRoomId(null);
+      setJoinedRoomId(null);
       if (error) {
         console.alert("error in leaving room");
       }
     } catch (error) {
       console.log("unexpected error", error);
     }
-    setUserJoined(false);
-    setCreatedRoomId(null);
-    setJoinedRoomId(null);
   };
 
   return (
