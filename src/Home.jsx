@@ -10,7 +10,7 @@ function Home({ user }) {
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
   const [trackEnded, setTrackEnded] = useState(false);
-  const [isManualLeave, setIsManualLeave] = useState(false);
+  const isManualLeaveRef = useRef(false);
 
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
@@ -546,17 +546,27 @@ function Home({ user }) {
 
   //////////////////// track //////////
   useEffect(() => {
-    if (trackEnded && !isManualLeave) {
+    if (trackEnded && !isManualLeaveRef.current) {
       (async () => {
+        console.log("Track ended (remote) — moving to next room");
         await nextRoom();
         setTrackEnded(false);
       })();
+    } else if (trackEnded && isManualLeaveRef.current) {
+      // manual leave triggered the track end — ignore it
+      console.log("Track ended due to manual leave — ignoring auto-next");
+      setTrackEnded(false);
     }
-  }, [trackEnded, isManualLeave]);
+  }, [trackEnded]);
 
   ////////////////////// Next Button ////////////////////
 
   const nextRoom = async () => {
+    if (isManualLeaveRef.current) {
+      console.log("nextRoom blocked: manual leave in progress");
+      return;
+    }
+
     try {
       console.log("➡️ Starting nextRoom...");
       await leaveRoom();
@@ -570,9 +580,15 @@ function Home({ user }) {
   ////////////////////// Leave Button ///////////////////////
   const leaveRoom = async () => {
     try {
-      setIsManualLeave(true); // 🚩 mark manual leave
+      // mark manual leave synchronously
+      isManualLeaveRef.current = true;
 
-      if (!joinedRoomId) return;
+      if (!joinedRoomId) {
+        // reset the manual flag quickly if nothing to do
+        setTimeout(() => (isManualLeaveRef.current = false), 500);
+        return;
+      }
+
       const { error } = await supabase
         .from("matches")
         .delete()
@@ -582,20 +598,48 @@ function Home({ user }) {
       setCreatedRoomId(null);
       setJoinedRoomId(null);
 
+      // REMOVE onended handlers so stopping tracks won't trigger onended
+      try {
+        if (remoteVideo.current?.srcObject) {
+          remoteVideo.current.srcObject.getTracks().forEach((t) => {
+            try {
+              t.onended = null;
+            } catch (e) {}
+          });
+        }
+        if (localVideo.current?.srcObject) {
+          localVideo.current.srcObject.getTracks().forEach((t) => {
+            try {
+              t.onended = null;
+            } catch (e) {}
+          });
+        }
+      } catch (e) {
+        console.warn("Failed to clear onended handlers:", e);
+      }
+
       if (pc.current) {
-        pc.current.getSenders().forEach((s) => s.track?.stop());
-        pc.current.close();
+        try {
+          pc.current.getSenders().forEach((s) => s.track?.stop());
+        } catch (e) {
+          console.warn("Error stopping senders:", e);
+        }
+        try {
+          pc.current.close();
+        } catch (e) {}
         pc.current = null;
       }
 
       if (error) {
-        alert("Error in leaving room");
+        alert("error in leaving room");
       }
     } catch (error) {
-      console.log("Unexpected error:", error);
+      console.log("unexpected error", error);
     } finally {
-      // Reset the flag after a short delay
-      setTimeout(() => setIsManualLeave(false), 1000);
+      // leave a short window where manual-leave is true so any synchronous onended won't trigger auto-next
+      setTimeout(() => {
+        isManualLeaveRef.current = false;
+      }, 500);
     }
   };
 
