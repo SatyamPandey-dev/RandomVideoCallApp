@@ -91,9 +91,7 @@ function Home({ user }) {
       count = count + 1;
       if (count > 5) {
         deleteUserMatch();
-        console.alert(
-          "No one is currently alive , plz retry after few seconds"
-        );
+        alert("No one is currently alive , plz retry after few seconds");
       }
     }, 2000);
 
