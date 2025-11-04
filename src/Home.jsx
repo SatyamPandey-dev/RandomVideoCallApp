@@ -669,17 +669,20 @@ function Home({ user }) {
               />
               <button
                 // onClick={sendMessage}
+                type="submit"
                 className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg"
               >
                 Send
               </button>
               <button
+                type="button"
                 className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg"
                 onClick={nextRoom}
               >
                 Next
               </button>
               <button
+                type="button"
                 className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
                 onClick={leaveRoom}
               >
