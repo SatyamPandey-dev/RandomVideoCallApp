@@ -736,8 +736,11 @@ function Home({ user }) {
 
   const nextRoom = async () => {
     try {
+      console.log("➡️ Starting nextRoom...");
       await leaveRoom();
+      console.log("✅ leaveRoom finished, now calling getRoom");
       await getRoom();
+      console.log("✅ getRoom finished");
     } catch (error) {
       console.error("error in moving next Room : ", error);
     }
