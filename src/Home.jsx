@@ -113,32 +113,32 @@ function Home({ user }) {
         },
         {
           urls: "turn:relay1.expressturn.com:3478",
-          username: "ef-test", // use your own credentials for production
+          username: "ef-test",
           credential: "ef-test-pass",
         },
       ],
     });
 
-    // 🧠 Debug: Watch ICE gathering progress
+    // ✅ Improvement #1: ICE Gathering Debug
     pc.current.onicegatheringstatechange = () => {
       console.log("ICE gathering state:", pc.current.iceGatheringState);
     };
 
-    /// Local  Video Setup ///
+    /// Local Video Setup ///
     navigator.mediaDevices
       .getUserMedia({ video: true, audio: true })
       .then(async (stream) => {
         console.log("🎥 Local stream acquired");
         localVideo.current.srcObject = stream;
+
         stream
           .getTracks()
           .forEach((track) => pc.current.addTrack(track, stream));
 
-        // ✅ Move offer creation *after* local tracks are added
+        // ✅ Offer created *after* tracks are added
         if (createdRoomId) {
           console.log("📞 Creating offer...");
           const offer = await pc.current.createOffer();
-          console.log("📡 Offer created");
           await pc.current.setLocalDescription(offer);
           console.log("✅ Local description set");
 
@@ -152,30 +152,28 @@ function Home({ user }) {
           ]);
           console.log("📨 Offer sent to Supabase");
         }
-
-
-
       })
-      .catch((err) => {
-        console.error("❌ Error accessing camera/mic:", err);
-      });
+      .catch((err) => console.error("❌ Error accessing camera/mic:", err));
 
-    /// Handle Remote  Video ///
+    /// Handle Remote Video ///
     pc.current.ontrack = (event) => {
       console.log("📺 Got remote stream:", event.streams[0]);
       remoteVideo.current.srcObject = event.streams[0];
 
-      // 🧩 Detect when remote track stops (peer left or crashed)
       event.streams[0].getTracks().forEach((track) => {
         track.onended = () => {
-          console.log("The other user has disconnected or ended the call.");
+          console.log("Remote user left – closing stream");
           setTrackEnded(true);
           setUserJoined(false);
         };
       });
     };
 
-    // 🧠 Detect connection state changes (WebRTC built-in offline detection)
+    // ✅ Improvement #2: ICE queue logic
+    let candidateQueue = [];
+    let remoteDescriptionSet = false;
+
+    // ✅ Connection State Logic
     let retryCount = 0;
     const MAX_RETRIES = 1;
     const RETRY_DELAY_MS = 1000;
@@ -185,51 +183,26 @@ function Home({ user }) {
       console.log("📡 Connection state changed:", state);
 
       if (state === "connected") {
+        retryCount = 0;
         console.log("✅ Peer connection established");
-        retryCount = 0; // reset retry count
       }
 
-      if (state === "closed"||) {
+      if (
+        state === "closed" ||
+        state === "disconnected" ||
+        state === "failed"
+      ) {
+        console.warn("⚠️ Peer disconnected or failed");
+
         if (!trackEnded && userJoined) {
-          console.log("Peer disconnected — waiting to move to next room...");
           setTrackEnded(true);
         }
-      }
 
-      if (state === "failed" || state === "disconnected") {
-        console.warn("⚠️ Peer connection lost or closed");
-
-        if (retryCount < MAX_RETRIES) {
-          retryCount++;
-          console.log(`🔁 Retrying connection... attempt ${retryCount}`);
-          setTimeout(async () => {
-            if (createdRoomId) {
-              console.log("📞 Recreating offer to reconnect...");
-              const offer = await pc.current.createOffer();
-              await pc.current.setLocalDescription(offer);
-              await supabase.from("signals").insert([
-                {
-                  room: joinedRoomId,
-                  sender: user.id,
-                  type: "offer",
-                  data: offer,
-                },
-              ]);
-            }
-          }, RETRY_DELAY_MS * retryCount);
-        } else {
-          console.log(
-            "Connection failed after several attempts. Please refresh or rejoin."
-          );
-
-          setUserJoined(false);
-          setTrackEnded(true);
-          if (remoteVideo.current) remoteVideo.current.srcObject = null;
-        }
+        return;
       }
     };
 
-    // 2️⃣ Send ICE candidates to Supabase
+    // ✅ Send ICE Candidates
     pc.current.onicecandidate = async (event) => {
       if (event.candidate) {
         console.log("🔥 Sending ICE candidate:", event.candidate);
@@ -246,10 +219,7 @@ function Home({ user }) {
       }
     };
 
-    // 3️⃣ Listen for signals from Supabase
-    let candidateQueue = [];
-    let remoteDescriptionSet = false;
-
+    // ✅ Listen Signals
     const channel = supabase
       .channel("signal-listener")
       .on(
@@ -261,11 +231,12 @@ function Home({ user }) {
           filter: `room=eq.${joinedRoomId}`,
         },
         async (payload) => {
-          if (payload.new.sender === user.id) return; // ignore own messages
+          if (payload.new.sender === user.id) return;
+
           const { type, data } = payload.new;
 
           if (type === "offer") {
-            console.log("📥 Received offer from remote user");
+            console.log("📥 Received offer");
             await pc.current.setRemoteDescription(
               new RTCSessionDescription(data)
             );
@@ -273,6 +244,7 @@ function Home({ user }) {
 
             const answer = await pc.current.createAnswer();
             await pc.current.setLocalDescription(answer);
+
             await supabase.from("signals").insert([
               {
                 room: joinedRoomId,
@@ -281,39 +253,42 @@ function Home({ user }) {
                 data: answer,
               },
             ]);
-            console.log("📤 Sent answer to Supabase");
 
-            // Flush queued candidates
+            // ✅ Flush queued ICE
             for (const c of candidateQueue) {
               try {
                 await pc.current.addIceCandidate(new RTCIceCandidate(c));
-              } catch (err) {
-                console.error("❌ Error adding queued ICE:", err);
+                console.log("✅ Added queued ICE");
+              } catch (e) {
+                console.error("❌ Error adding queued ICE:", e);
               }
             }
             candidateQueue = [];
-          } else if (type === "answer") {
-            console.log("📥 Received answer, setting remote description");
+          }
+
+          if (type === "answer") {
+            console.log("📥 Received answer");
             await pc.current.setRemoteDescription(
               new RTCSessionDescription(data)
             );
             remoteDescriptionSet = true;
 
-            // Flush queued candidates
             for (const c of candidateQueue) {
               try {
                 await pc.current.addIceCandidate(new RTCIceCandidate(c));
-              } catch (err) {
-                console.error("❌ Error adding queued ICE:", err);
+              } catch (e) {
+                console.error("❌ Error adding queued ICE:", e);
               }
             }
             candidateQueue = [];
-          } else if (type === "candidate") {
-            console.log("📥 Received ICE candidate:", data);
+          }
+
+          if (type === "candidate") {
+            console.log("📥 Received ICE:", data);
 
             if (!remoteDescriptionSet) {
               console.warn(
-                "⚠️ Remote description not set yet — queuing ICE candidate"
+                "⚠️ Queuing ICE because remote description not set yet"
               );
               candidateQueue.push(data);
               return;
@@ -324,26 +299,6 @@ function Home({ user }) {
               console.log("✅ Added ICE candidate successfully");
             } catch (err) {
               console.error("❌ Error adding ICE:", err);
-
-              // Retry logic for ICE add failures
-              if (retryCount < MAX_RETRIES) {
-                retryCount++;
-                console.warn(`🔁 Retrying ICE add... attempt ${retryCount}`);
-                setTimeout(() => {
-                  pc.current
-                    .addIceCandidate(new RTCIceCandidate(data))
-                    .then(() =>
-                      console.log("✅ Retried ICE added successfully")
-                    )
-                    .catch((e) => console.error("❌ Retry ICE failed:", e));
-                }, RETRY_DELAY_MS * retryCount);
-              } else {
-                console.error(
-                  "🚨 Max ICE retries reached — manual reconnect needed."
-                );
-                setTrackEnded(true);
-                setUserJoined(false);
-              }
             }
           }
         }
@@ -352,11 +307,268 @@ function Home({ user }) {
 
     return () => {
       supabase.removeChannel(channel);
-      if (pc.current) {
-        pc.current.close();
-      }
+      if (pc.current) pc.current.close();
     };
   }, [joinedRoomId, createdRoomId]);
+
+  /////////////////
+  // useEffect(() => {
+  //   if (!joinedRoomId) return;
+
+  //   pc.current = new RTCPeerConnection({
+  //     iceServers: [
+  //       {
+  //         urls: [
+  //           "stun:stun1.l.google.com:19302",
+  //           "stun:stun2.l.google.com:19302",
+  //         ],
+  //       },
+  //       {
+  //         urls: "turn:relay1.expressturn.com:3478",
+  //         username: "ef-test", // use your own credentials for production
+  //         credential: "ef-test-pass",
+  //       },
+  //     ],
+  //   });
+
+  //   // 🧠 Debug: Watch ICE gathering progress
+  //   pc.current.onicegatheringstatechange = () => {
+  //     console.log("ICE gathering state:", pc.current.iceGatheringState);
+  //   };
+
+  //   /// Local  Video Setup ///
+  //   navigator.mediaDevices
+  //     .getUserMedia({ video: true, audio: true })
+  //     .then(async (stream) => {
+  //       console.log("🎥 Local stream acquired");
+  //       localVideo.current.srcObject = stream;
+  //       stream
+  //         .getTracks()
+  //         .forEach((track) => pc.current.addTrack(track, stream));
+
+  //       // ✅ Move offer creation *after* local tracks are added
+  //       if (createdRoomId) {
+  //         console.log("📞 Creating offer...");
+  //         const offer = await pc.current.createOffer();
+  //         console.log("📡 Offer created");
+  //         await pc.current.setLocalDescription(offer);
+  //         console.log("✅ Local description set");
+
+  //         await supabase.from("signals").insert([
+  //           {
+  //             room: joinedRoomId,
+  //             sender: user.id,
+  //             type: "offer",
+  //             data: offer,
+  //           },
+  //         ]);
+  //         console.log("📨 Offer sent to Supabase");
+  //       }
+
+  //     })
+  //     .catch((err) => {
+  //       console.error("❌ Error accessing camera/mic:", err);
+  //     });
+
+  //   /// Handle Remote  Video ///
+  //   pc.current.ontrack = (event) => {
+  //     console.log("📺 Got remote stream:", event.streams[0]);
+  //     remoteVideo.current.srcObject = event.streams[0];
+
+  //     // 🧩 Detect when remote track stops (peer left or crashed)
+  //     event.streams[0].getTracks().forEach((track) => {
+  //       track.onended = () => {
+  //         console.log("The other user has disconnected or ended the call.");
+  //         setTrackEnded(true);
+  //         setUserJoined(false);
+  //       };
+  //     });
+  //   };
+
+  //   // 🧠 Detect connection state changes (WebRTC built-in offline detection)
+  //   let retryCount = 0;
+  //   const MAX_RETRIES = 1;
+  //   const RETRY_DELAY_MS = 1000;
+
+  //   pc.current.onconnectionstatechange = () => {
+  //     const state = pc.current.connectionState;
+  //     console.log("📡 Connection state changed:", state);
+
+  //     if (state === "connected") {
+  //       console.log("✅ Peer connection established");
+  //       retryCount = 0; // reset retry count
+  //     }
+
+  //     if (state === "closed"||) {
+  //       if (!trackEnded && userJoined) {
+  //         console.log("Peer disconnected — waiting to move to next room...");
+  //         setTrackEnded(true);
+  //       }
+  //     }
+
+  //     if (state === "failed" || state === "disconnected") {
+  //       console.warn("⚠️ Peer connection lost or closed");
+
+  //       if (retryCount < MAX_RETRIES) {
+  //         retryCount++;
+  //         console.log(`🔁 Retrying connection... attempt ${retryCount}`);
+  //         setTimeout(async () => {
+  //           if (createdRoomId) {
+  //             console.log("📞 Recreating offer to reconnect...");
+  //             const offer = await pc.current.createOffer();
+  //             await pc.current.setLocalDescription(offer);
+  //             await supabase.from("signals").insert([
+  //               {
+  //                 room: joinedRoomId,
+  //                 sender: user.id,
+  //                 type: "offer",
+  //                 data: offer,
+  //               },
+  //             ]);
+  //           }
+  //         }, RETRY_DELAY_MS * retryCount);
+  //       } else {
+  //         console.log(
+  //           "Connection failed after several attempts. Please refresh or rejoin."
+  //         );
+
+  //         setUserJoined(false);
+  //         setTrackEnded(true);
+  //         if (remoteVideo.current) remoteVideo.current.srcObject = null;
+  //       }
+  //     }
+  //   };
+
+  //   // 2️⃣ Send ICE candidates to Supabase
+  //   pc.current.onicecandidate = async (event) => {
+  //     if (event.candidate) {
+  //       console.log("🔥 Sending ICE candidate:", event.candidate);
+  //       await supabase.from("signals").insert([
+  //         {
+  //           room: joinedRoomId,
+  //           sender: user.id,
+  //           type: "candidate",
+  //           data: event.candidate.toJSON(),
+  //         },
+  //       ]);
+  //     } else {
+  //       console.log("🚫 No more ICE candidates (null)");
+  //     }
+  //   };
+
+  //   // 3️⃣ Listen for signals from Supabase
+  //   let candidateQueue = [];
+  //   let remoteDescriptionSet = false;
+
+  //   const channel = supabase
+  //     .channel("signal-listener")
+  //     .on(
+  //       "postgres_changes",
+  //       {
+  //         event: "INSERT",
+  //         schema: "public",
+  //         table: "signals",
+  //         filter: `room=eq.${joinedRoomId}`,
+  //       },
+  //       async (payload) => {
+  //         if (payload.new.sender === user.id) return; // ignore own messages
+  //         const { type, data } = payload.new;
+
+  //         if (type === "offer") {
+  //           console.log("📥 Received offer from remote user");
+  //           await pc.current.setRemoteDescription(
+  //             new RTCSessionDescription(data)
+  //           );
+  //           remoteDescriptionSet = true;
+
+  //           const answer = await pc.current.createAnswer();
+  //           await pc.current.setLocalDescription(answer);
+  //           await supabase.from("signals").insert([
+  //             {
+  //               room: joinedRoomId,
+  //               sender: user.id,
+  //               type: "answer",
+  //               data: answer,
+  //             },
+  //           ]);
+  //           console.log("📤 Sent answer to Supabase");
+
+  //           // Flush queued candidates
+  //           for (const c of candidateQueue) {
+  //             try {
+  //               await pc.current.addIceCandidate(new RTCIceCandidate(c));
+  //             } catch (err) {
+  //               console.error("❌ Error adding queued ICE:", err);
+  //             }
+  //           }
+  //           candidateQueue = [];
+  //         } else if (type === "answer") {
+  //           console.log("📥 Received answer, setting remote description");
+  //           await pc.current.setRemoteDescription(
+  //             new RTCSessionDescription(data)
+  //           );
+  //           remoteDescriptionSet = true;
+
+  //           // Flush queued candidates
+  //           for (const c of candidateQueue) {
+  //             try {
+  //               await pc.current.addIceCandidate(new RTCIceCandidate(c));
+  //             } catch (err) {
+  //               console.error("❌ Error adding queued ICE:", err);
+  //             }
+  //           }
+  //           candidateQueue = [];
+  //         } else if (type === "candidate") {
+  //           console.log("📥 Received ICE candidate:", data);
+
+  //           if (!remoteDescriptionSet) {
+  //             console.warn(
+  //               "⚠️ Remote description not set yet — queuing ICE candidate"
+  //             );
+  //             candidateQueue.push(data);
+  //             return;
+  //           }
+
+  //           try {
+  //             await pc.current.addIceCandidate(new RTCIceCandidate(data));
+  //             console.log("✅ Added ICE candidate successfully");
+  //           } catch (err) {
+  //             console.error("❌ Error adding ICE:", err);
+
+  //             // Retry logic for ICE add failures
+  //             if (retryCount < MAX_RETRIES) {
+  //               retryCount++;
+  //               console.warn(`🔁 Retrying ICE add... attempt ${retryCount}`);
+  //               setTimeout(() => {
+  //                 pc.current
+  //                   .addIceCandidate(new RTCIceCandidate(data))
+  //                   .then(() =>
+  //                     console.log("✅ Retried ICE added successfully")
+  //                   )
+  //                   .catch((e) => console.error("❌ Retry ICE failed:", e));
+  //               }, RETRY_DELAY_MS * retryCount);
+  //             } else {
+  //               console.error(
+  //                 "🚨 Max ICE retries reached — manual reconnect needed."
+  //               );
+  //               setTrackEnded(true);
+  //               setUserJoined(false);
+  //             }
+  //           }
+  //         }
+  //       }
+  //     )
+  //     .subscribe();
+
+  //   return () => {
+  //     supabase.removeChannel(channel);
+  //     if (pc.current) {
+  //       pc.current.close();
+  //     }
+  //   };
+  // }, [joinedRoomId, createdRoomId]);
+
+  ///////////////////
 
   // useEffect(() => {
   //   if (!userJoined && joinedRoomId) {
