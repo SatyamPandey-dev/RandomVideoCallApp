@@ -555,6 +555,12 @@ function Home({ user }) {
   ////////////////////// Next Button ////////////////////
 
   const nextRoom = async () => {
+    if (userJoined) {
+      console.log("⏭️ Moving to next room...");
+    } else {
+      console.log("🚫 Skipping nextRoom — not joined");
+      return;
+    }
     try {
       console.log("➡️ Starting nextRoom...");
       await leaveRoom();
