@@ -734,7 +734,7 @@ function Home({ user }) {
 
   ///////////// trackended ///////////
   useEffect(() => {
-    if (trackEnded & userJoined) {
+    if (trackEnded && userJoined) {
       leaveRoom();
       getRoom();
     }
@@ -744,8 +744,8 @@ function Home({ user }) {
 
   const nextRoom = async () => {
     try {
-      leaveRoom();
-      getRoom();
+      await leaveRoom();
+      await getRoom();
     } catch (error) {
       console.error("error in moving next Room : ", error);
     }
