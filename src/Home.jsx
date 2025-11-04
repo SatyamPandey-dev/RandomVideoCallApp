@@ -135,23 +135,38 @@ function Home({ user }) {
           .forEach((track) => pc.current.addTrack(track, stream));
 
         // ✅ Move offer creation *after* local tracks are added
-        if (createdRoomId) {
-          console.log("📞 Creating offer...");
-          const offer = await pc.current.createOffer();
-          console.log("📡 Offer created");
-          await pc.current.setLocalDescription(offer);
-          console.log("✅ Local description set");
+        // if (createdRoomId) {
+        //   console.log("📞 Creating offer...");
+        //   const offer = await pc.current.createOffer();
+        //   console.log("📡 Offer created");
+        //   await pc.current.setLocalDescription(offer);
+        //   console.log("✅ Local description set");
 
-          await supabase.from("signals").insert([
-            {
-              room: joinedRoomId,
-              sender: user.id,
-              type: "offer",
-              data: offer,
-            },
-          ]);
-          console.log("📨 Offer sent to Supabase");
-        }
+        //   await supabase.from("signals").insert([
+        //     {
+        //       room: joinedRoomId,
+        //       sender: user.id,
+        //       type: "offer",
+        //       data: offer,
+        //     },
+        //   ]);
+        //   console.log("📨 Offer sent to Supabase");
+        // }
+
+        if (createdRoomId) {
+  console.log("📞 Waiting briefly before sending offer...");
+  await new Promise(res => setTimeout(res, 1200)); // ✅ Makes sure remote listener is ready
+
+  console.log("📞 Creating offer now...");
+  const offer = await pc.current.createOffer();
+  await pc.current.setLocalDescription(offer);
+
+  await supabase.from("signals").insert([
+    { room: joinedRoomId, sender: user.id, type: "offer", data: offer },
+  ]);
+  console.log("📨 Offer sent to Supabase");
+}
+
       })
       .catch((err) => {
         console.error("❌ Error accessing camera/mic:", err);
