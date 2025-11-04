@@ -8,10 +8,7 @@ export default function useWebRTC(
   createdRoomId,
   userJoined
 ) {
-  //   const [joinedRoomId, setJoinedRoomId] = useState(null);
-  //   const [createdRoomId, setCreatedRoomId] = useState(null);
   const [trackEnded, setTrackEnded] = useState(false);
-  //   const [userJoined, setUserJoined] = useState(false);
 
   const pc = useRef(null);
   const localVideo = useRef(null);
