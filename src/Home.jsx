@@ -379,9 +379,10 @@ function Home({ user }) {
             }
           }, RETRY_DELAY_MS * retryCount);
         } else {
-          alert(
+          console.log(
             "Connection failed after several attempts. Please refresh or rejoin."
           );
+
           setUserJoined(false);
           if (remoteVideo.current) remoteVideo.current.srcObject = null;
           setTrackEnded(true);
@@ -501,6 +502,8 @@ function Home({ user }) {
                 console.error(
                   "🚨 Max ICE retries reached — manual reconnect needed."
                 );
+                setTrackEnded(true);
+                setUserJoined(false);
               }
             }
           }
@@ -733,8 +736,20 @@ function Home({ user }) {
   useEffect(() => {
     if (trackEnded & userJoined) {
       leaveRoom();
+      getRoom();
     }
   }, [trackEnded, userJoined]);
+
+  ////////////////////// Next Button ////////////////////
+
+  const nextRoom = async () => {
+    try {
+      leaveRoom();
+      getRoom();
+    } catch (error) {
+      console.error("error in moving next Room : ", error);
+    }
+  };
 
   ////////////////////// Leave Button ///////////////////////
 
@@ -834,7 +849,10 @@ function Home({ user }) {
                 >
                   Send
                 </button>
-                <button className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg">
+                <button
+                  className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg"
+                  onClick={nextRoom}
+                >
                   Next
                 </button>
                 <button
