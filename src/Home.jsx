@@ -186,14 +186,14 @@ function Home({ user }) {
         retryCount = 0; // reset retry count
       }
 
-      if (state === "failed" || state === "disconnected") {
+      if (state === "closed"||) {
         if (!trackEnded && userJoined) {
           console.log("Peer disconnected — waiting to move to next room...");
           setTrackEnded(true);
         }
       }
 
-      if (state === "closed") {
+      if (state === "failed" || state === "disconnected") {
         console.warn("⚠️ Peer connection lost or closed");
 
         if (retryCount < MAX_RETRIES) {
