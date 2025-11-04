@@ -787,20 +787,18 @@ function Home({ user }) {
           {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
 
           <div className="flex gap-2">
-            <video
-              ref={localVideo}
-              autoPlay
-              playsInline
-              muted
-              className="w-1/2 border"
-            />
             {!userJoined ? (
+              <img alt="Local" className="w-1/2 border" />
+            ) : (
               <video
                 ref={localVideo}
                 autoPlay
                 playsInline
                 className="w-1/2 border"
               />
+            )}
+            {!userJoined ? (
+              <img alt="Remote" className="w-1/2 border" />
             ) : (
               <video
                 ref={remoteVideo}
