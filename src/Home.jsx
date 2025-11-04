@@ -10,6 +10,8 @@ function Home({ user }) {
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
   const [trackEnded, setTrackEnded] = useState(false);
+  const [isManualLeave, setIsManualLeave] = useState(false);
+
   const localVideo = useRef(null);
   const remoteVideo = useRef(null);
   const pc = useRef(null);
@@ -544,13 +546,13 @@ function Home({ user }) {
 
   //////////////////// track //////////
   useEffect(() => {
-    if (trackEnded) {
+    if (trackEnded && !isManualLeave) {
       (async () => {
         await nextRoom();
         setTrackEnded(false);
       })();
     }
-  }, [trackEnded]);
+  }, [trackEnded, isManualLeave]);
 
   ////////////////////// Next Button ////////////////////
 
@@ -566,9 +568,10 @@ function Home({ user }) {
   };
 
   ////////////////////// Leave Button ///////////////////////
-
   const leaveRoom = async () => {
     try {
+      setIsManualLeave(true); // 🚩 mark manual leave
+
       if (!joinedRoomId) return;
       const { error } = await supabase
         .from("matches")
@@ -586,10 +589,13 @@ function Home({ user }) {
       }
 
       if (error) {
-        console.alert("error in leaving room");
+        alert("Error in leaving room");
       }
     } catch (error) {
-      console.log("unexpected error", error);
+      console.log("Unexpected error:", error);
+    } finally {
+      // Reset the flag after a short delay
+      setTimeout(() => setIsManualLeave(false), 500);
     }
   };
 
