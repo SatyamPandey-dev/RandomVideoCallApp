@@ -81,6 +81,7 @@ function Home({ user }) {
       } else {
         console.log("✅ Deleted user match for room:", joinedRoomId);
       }
+      clearInterval(intervalId);
     };
 
     intervalId = setInterval(() => {
@@ -88,12 +89,13 @@ function Home({ user }) {
       checkJoin();
       console.log("count :", count);
       count = count + 1;
+      if (count > 5) {
+        deleteUserMatch();
+        console.alert(
+          "No one is currently alive , plz retry after few seconds"
+        );
+      }
     }, 2000);
-
-    if (count > 5) {
-      deleteUserMatch();
-      console.alert("No one is currently alive , plz retry after few seconds");
-    }
 
     return () => clearInterval(intervalId);
   }, [createdRoomId]);
