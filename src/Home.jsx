@@ -382,35 +382,65 @@ export default function Home({ user }) {
   };
 
   return (
-    <div>
-      <div className=" flex flex-col justify-center items-center p-3  ">
-        <div className="flex flex-col    text-white ">
-          {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
+    <div className="overflow-x-hidden gradient-bg3 min-h-screen ">
+      <div className="flex justify-between items-center px-10">
+        <h1 className="text-gray-50 font-bold text-[50px] ">Socio</h1>
+        <button className="text-gray-50 poppins-blod text-[20px] px-12 py-2 glass border[1px] border-white rounded-lg ">
+          home
+        </button>
+      </div>
+      <div className="flex max-h-screen w-screen justify-center items-center gap-20  ">
+        <div className=" flex flex-col justify-between items-center w-2/3  h-[85vh] ">
+          <div className="flex flex-col   text-white ">
+            <div className="flex justify-between items-center px-2 py-2">
+              {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
+              {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
+            </div>
 
-          <div className="flex gap-2">
-            {!userJoined ? (
-              <img alt="Local" className="w-1/2 border" />
-            ) : (
-              <video
-                ref={localVideo}
-                autoPlay
-                playsInline
-                className="w-1/2 border"
-              />
-            )}
-            {!userJoined ? (
-              <img alt="Remote" className="w-1/2 border" />
-            ) : (
-              <video
-                ref={remoteVideo}
-                autoPlay
-                playsInline
-                className="w-1/2 border"
-              />
-            )}
+            <div className="flex gap-2  border-[10px] border-[#0b274b] w-[734px] h-[354px] rounded-2xl mb-1 ">
+              {!userJoined ? (
+                <img alt="Local" className="w-1/2 r" />
+              ) : (
+                <video
+                  ref={localVideo}
+                  autoPlay
+                  playsInline
+                  className="w-1/2 "
+                />
+              )}
+              {!userJoined ? (
+                <img alt="Remote" className="w-1/2 " />
+              ) : (
+                <video
+                  ref={remoteVideo}
+                  autoPlay
+                  playsInline
+                  className="w-1/2 "
+                />
+              )}
+            </div>
+
+            <div className="p-4 flex gap-2 justify-end items-center px-2 ">
+              <button
+                type="button"
+                className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg "
+                onClick={nextRoom}
+              >
+                Next
+              </button>
+              <button
+                type="button"
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg  "
+                onClick={leaveRoom}
+              >
+                Leave
+              </button>
+            </div>
           </div>
+        </div>
+        <div className="flex flex-col gap-10 chat w-1/3 px-10">
           {/* Chat Messages */}
-          <div className="flex flex-col overflow-y-auto h-[200px]  space-y-3 bg-[#e1b6b0] ">
+          <div className="flex flex-col overflow-y-auto h-[70vh]  space-y-3 glass ">
             {message.map((msg, i) => {
               const time = new Date(msg.createdat).toISOString([], {
                 hour: "2-digit",
@@ -447,7 +477,7 @@ export default function Home({ user }) {
               sendMessage();
             }}
           >
-            <div className="p-4 flex gap-2 border-t border-gray-700  bg-gray-900 ">
+            <div className="p-4 flex gap-2 border-t glass rounded-2xl ">
               <input
                 type="text"
                 placeholder="Type a message..."
@@ -464,14 +494,14 @@ export default function Home({ user }) {
               </button>
               <button
                 type="button"
-                className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg"
+                className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg hidden "
                 onClick={nextRoom}
               >
                 Next
               </button>
               <button
                 type="button"
-                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg"
+                className="bg-red-600 hover:bg-red-700 px-4 py-2 rounded-lg hidden "
                 onClick={leaveRoom}
               >
                 Leave

@@ -1,6 +1,6 @@
 // ✅ useWebRTC.js
 import { useEffect, useRef, useState } from "react";
-import { supabase } from "../supabaseClient"; // adjust path
+import { supabase } from "./supabaseClient"; // adjust path
 
 export default function useWebRTC(
   user,

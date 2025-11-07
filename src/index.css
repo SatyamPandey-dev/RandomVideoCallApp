@@ -2,6 +2,73 @@
 @tailwind components;
 @tailwind utilities;
 
-html {
-  background-color: rgb(26, 30, 49);
+.poppins-bold {
+  font-family: "Poppins", sans-serif;
+  font-weight: 700;
+  font-style: normal;
+}
+
+.poppins-thin {
+  font-family: "Poppins", sans-serif;
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* html {
+  background: url("./assets/digitalized-indian-patterned-folk-art-design-ysjeoq5yrxg5ffyk.jpg");
+} */
+
+body {
+  margin: 0;
+  padding: 0;
+}
+
+.gradient-bg {
+  /* background: #0000ee; */
+  background: linear-gradient(
+    191deg,
+    rgba(0, 0, 238, 1) 0%,
+    rgba(89, 64, 223, 1) 50%,
+    rgba(115, 91, 242, 1) 100%
+  );
+}
+
+.gradient-bg2 {
+  /* background: rgb(65, 138, 231); */
+  background: linear-gradient(
+    187deg,
+    rgb(100, 74, 241) 100%,
+    rgb(0, 0, 238) 10%
+  );
+}
+
+.gradient-bg3 {
+  background: linear-gradient(180deg, #0aa7eb 0%, #000000 100%);
+}
+
+.bd-col {
+  border-color: linear-gradient(180deg, #0aa7eb 0%, #000000 100%);
+}
+
+.glass {
+  /* From https://css.glass */
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 16px;
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.card:hover {
+  cursor: pointer;
+  background-color: white;
+  transform: translateY(-10px);
+  transition: 0.2s ease-in;
+  h1 {
+    color: #000;
+  }
+  p {
+    color: rgb(36, 36, 36);
+  }
 }

@@ -10,6 +10,9 @@ import {
   useLocation,
   useNavigate,
 } from "react-router-dom";
+import Hero from "./Hero";
+import Features from "./Features";
+import MoreFeatures from "./MoreFeatures";
 
 export default function App() {
   const [user, setUser] = useState(null);
@@ -74,8 +77,17 @@ export default function App() {
             path="/"
             element={
               <>
-                <Navbar />
                 <Home user={user} />
+              </>
+            }
+          />
+          <Route
+            path="/hero"
+            element={
+              <>
+                <Hero />
+                <Features />
+                <MoreFeatures />
               </>
             }
           />
