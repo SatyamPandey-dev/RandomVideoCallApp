@@ -9,7 +9,7 @@ const Features = () => {
       <h1 className="text-[50px] text-center poppins-bold text-white px-5 pt-8">
         OMEGLE VIDEO CHAT & TALK TO STRANGERS
       </h1>
-      <div className="flex justify-start items-center w-full glass rounded-lg h-[450px] mt-10 h-full w-full border-[1px] border-white rounded-lg ">
+      <div className="flex justify-start items-center w-full glass rounded-lg h-[450px] mt-10 border-[1px] border-white">
         <div className="w-1/2  flex flex-col justify-center items-center px-10 py-5 gap-5 ">
           <h1 className="text-white poppins-bold  text-[30px] ">
             #1 Random Video Chat Platform

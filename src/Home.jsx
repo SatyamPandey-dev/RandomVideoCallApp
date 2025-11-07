@@ -1,3 +1,4 @@
+import noSignal from "./assets/noSignal.png";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import { v4 as uuidv4 } from "uuid";
@@ -386,30 +387,32 @@ export default function Home({ user }) {
   };
 
   return (
-    <div className="overflow-x-hidden gradient-bg3 min-h-screen ">
-      <div className="flex justify-between items-center px-10">
-        <h1 className="text-gray-50 font-bold text-[50px] ">Socio</h1>
-        <button className="text-gray-50 poppins-blod text-[20px] px-12 py-2 glass border[1px] border-white rounded-lg ">
+    <div className="overflow-x-hidden gradient-bg min-h-screen xl:max-h-screen xl:overflow-y-hidden ">
+      <div className="flex justify-between items-center lg:px-10 px-5 py-2 ">
+        <h1 className="text-gray-50 font-bold lg:text-[50px] text-[20px] ">
+          Socio
+        </h1>
+        <button className="text-gray-50 poppins-blod lg:text-[20px] lg:px-12 lg:py-2 text-[10px] px-5 py-1 glass-2  border-[2px] border-white rounded-lg ">
           home
         </button>
       </div>
-      <div className="flex max-h-screen w-screen justify-center items-center gap-20  ">
-        <div className=" flex flex-col justify-between items-center w-2/3  h-[85vh] ">
-          <div className="flex flex-col   text-white ">
-            <div className="flex justify-between items-center px-2 py-2">
+      <div className="flex flex-col xl:flex-row  w-screen justify-center items-center sm:gap-5 xl:gap-16  ">
+        <div className=" flex flex-col justify-between items-center xl:w-2/3  xl:h-[85vh] lg:pt-5 pt-1 ">
+          <div className="flex flex-col   text-white  ">
+            <div className="flex justify-between items-center px-2 py-2 ">
               {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
               {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
             </div>
 
-            <div className="flex gap-2  border-[10px] border-[#0b274b] w-[734px] h-[354px] rounded-2xl mb-1 ">
+            <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[720px] sm:h-[370px] rounded-2xl sm:mb-1 ">
               {!userJoined ? (
                 <img
-                  alt="Local w-full h-full object-cover"
-                  className="w-1/2 r"
+                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
+                  src={noSignal}
                 />
               ) : (
                 <video
-                  className=" w-1/2 h-full object-cover"
+                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
                   ref={localVideo}
                   autoPlay
                   playsInline
@@ -417,12 +420,12 @@ export default function Home({ user }) {
               )}
               {!userJoined ? (
                 <img
-                  alt="Remote w-full h-full object-cover "
-                  className="w-1/2 "
+                  className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
+                  src={noSignal}
                 />
               ) : (
                 <video
-                  className=" w-1/2 h-full object-cover"
+                  className="w-full sm:w-1/2 h-full object-cover rounded-2xl"
                   ref={remoteVideo}
                   autoPlay
                   playsInline
@@ -430,7 +433,7 @@ export default function Home({ user }) {
               )}
             </div>
 
-            <div className="p-4 flex gap-2 justify-end items-center px-2 ">
+            <div className="p-4 sm:flex gap-2 justify-center items-center px-2 glass hidden  ">
               <button
                 type="button"
                 className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg "
@@ -448,9 +451,9 @@ export default function Home({ user }) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-10 chat w-1/3 px-10">
+        <div className="flex flex-col gap-1 lg:gap-3 xl:pt-5 sm:w-[720px]   chat xl:w-1/3 xl:pr-20  ">
           {/* Chat Messages */}
-          <div className="flex flex-col overflow-y-auto h-[70vh]  space-y-3 glass ">
+          <div className="flex flex-col  overflow-y-auto h-[27vh] xl:h-[70vh] box2   glass ">
             {message.map((msg, i) => {
               const time = new Date(msg.createdat).toISOString([], {
                 hour: "2-digit",
@@ -487,7 +490,7 @@ export default function Home({ user }) {
               sendMessage();
             }}
           >
-            <div className="p-4 flex gap-2 border-t glass rounded-2xl ">
+            <div className="lg:p-4 p-1 flex gap-2 border-t glass rounded-2xl ">
               <input
                 type="text"
                 placeholder="Type a message..."
