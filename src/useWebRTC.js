@@ -6,7 +6,8 @@ export default function useWebRTC(
   user,
   joinedRoomId,
   createdRoomId,
-  userJoined
+  userJoined,
+  setUserJoined
 ) {
   const [trackEnded, setTrackEnded] = useState(false);
 

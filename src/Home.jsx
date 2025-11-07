@@ -17,7 +17,8 @@ export default function Home({ user }) {
     user,
     joinedRoomId,
     createdRoomId,
-    userJoined
+    userJoined,
+    setUserJoined
   );
   var count = 0;
 
