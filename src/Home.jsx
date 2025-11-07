@@ -10,15 +10,18 @@ export default function Home({ user }) {
   const [userMessage, setUserMessage] = useState("");
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
+  const [trackEnded, setTrackEnded] = useState(false);
 
   const isManualLeaveRef = useRef(false);
 
-  const { localVideo, remoteVideo, pc, trackEnded, setTrackEnded } = useWebRTC(
+  const { localVideo, remoteVideo, pc } = useWebRTC(
     user,
     joinedRoomId,
     createdRoomId,
     userJoined,
-    setUserJoined
+    setUserJoined,
+    trackEnded,
+    setTrackEnded
   );
   var count = 0;
 
