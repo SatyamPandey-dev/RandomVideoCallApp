@@ -13,7 +13,7 @@ export default function Home({ user }) {
 
   const isManualLeaveRef = useRef(false);
 
-  const { localVideo, remoteVideo, pc, trackEnded } = useWebRTC(
+  const { localVideo, remoteVideo, pc, trackEnded, setTrackEnded } = useWebRTC(
     user,
     joinedRoomId,
     createdRoomId,
