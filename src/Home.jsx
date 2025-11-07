@@ -409,11 +409,10 @@ export default function Home({ user }) {
                 />
               ) : (
                 <video
-                  className=" w-full h-full object-cover"
+                  className=" w-1/2 h-full object-cover"
                   ref={localVideo}
                   autoPlay
                   playsInline
-                  className="w-1/2 "
                 />
               )}
               {!userJoined ? (
@@ -423,11 +422,10 @@ export default function Home({ user }) {
                 />
               ) : (
                 <video
-                  className=" w-full h-full object-cover"
+                  className=" w-1/2 h-full object-cover"
                   ref={remoteVideo}
                   autoPlay
                   playsInline
-                  className="w-1/2 "
                 />
               )}
             </div>
