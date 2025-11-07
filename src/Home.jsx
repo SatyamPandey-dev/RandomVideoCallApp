@@ -403,9 +403,13 @@ export default function Home({ user }) {
 
             <div className="flex gap-2  border-[10px] border-[#0b274b] w-[734px] h-[354px] rounded-2xl mb-1 ">
               {!userJoined ? (
-                <img alt="Local" className="w-1/2 r" />
+                <img
+                  alt="Local w-full h-full object-cover"
+                  className="w-1/2 r"
+                />
               ) : (
                 <video
+                  className=" w-full h-full object-cover"
                   ref={localVideo}
                   autoPlay
                   playsInline
@@ -413,9 +417,13 @@ export default function Home({ user }) {
                 />
               )}
               {!userJoined ? (
-                <img alt="Remote" className="w-1/2 " />
+                <img
+                  alt="Remote w-full h-full object-cover "
+                  className="w-1/2 "
+                />
               ) : (
                 <video
+                  className=" w-full h-full object-cover"
                   ref={remoteVideo}
                   autoPlay
                   playsInline
