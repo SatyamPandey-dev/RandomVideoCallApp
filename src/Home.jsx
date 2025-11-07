@@ -404,7 +404,7 @@ export default function Home({ user }) {
               {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
             </div>
 
-            <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[720px] sm:h-[370px] rounded-2xl sm:mb-1 ">
+            <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
               {!userJoined ? (
                 <img
                   className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
@@ -451,7 +451,7 @@ export default function Home({ user }) {
             </div>
           </div>
         </div>
-        <div className="flex flex-col gap-1 lg:gap-3 xl:pt-5 sm:w-[720px]   chat xl:w-1/3 xl:pr-20  ">
+        <div className="flex flex-col gap-1 lg:gap-3 xl:pt-5 sm:w-[670px]   chat xl:w-1/3 xl:pr-20  ">
           {/* Chat Messages */}
           <div className="flex flex-col  overflow-y-auto h-[27vh] xl:h-[70vh] box2   glass ">
             {message.map((msg, i) => {
