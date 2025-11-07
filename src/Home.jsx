@@ -433,7 +433,7 @@ export default function Home({ user }) {
               )}
             </div>
 
-            <div className="p-4 sm:flex gap-2 justify-center items-center px-2 glass hidden  ">
+            <div className="p-4 flex gap-2 justify-center items-center px-2 glass   ">
               <button
                 type="button"
                 className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg "
