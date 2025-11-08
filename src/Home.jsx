@@ -474,7 +474,7 @@ export default function Home({ user }) {
               )}
             </div>
 
-            <div className="lg:p-4 p-1 flex gap-2 justify-center items-center px-2 glass   ">
+            <div className="lg:p-4 p-1 flex gap-2 justify-center items-center px-2 glass z-10   ">
               <button
                 type="button"
                 className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg "
@@ -494,7 +494,7 @@ export default function Home({ user }) {
         </div>
         <div className="flex flex-col gap-1 lg:gap-3 xl:pt-5 sm:w-[670px]   chat xl:w-1/3 xl:pr-20  ">
           {/* Chat Messages */}
-          <div className="flex flex-col  overflow-y-auto h-[27vh] xl:h-[70vh] box2   glass ">
+          <div className="flex flex-col  overflow-y-auto h-[27vh] xl:h-[70vh] box2   xl:glass ">
             {message.map((msg, i) => {
               const time = new Date(msg.createdat).toISOString([], {
                 hour: "2-digit",
