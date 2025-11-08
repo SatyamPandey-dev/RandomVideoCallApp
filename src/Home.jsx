@@ -32,7 +32,7 @@ export default function Home({ user }) {
 
   /////////////////////////////////////////////
 
-  const videoRef = useRef(null);
+  const myVideoRef = useRef(null);
 
   useEffect(() => {
     const startCamera = async () => {
@@ -42,8 +42,8 @@ export default function Home({ user }) {
           audio: false, // audio optional
         });
 
-        if (videoRef.current) {
-          videoRef.current.srcObject = stream;
+        if (myVideoRef.current) {
+          myVideoRef.current.srcObject = stream;
         }
       } catch (err) {
         console.error("Error accessing camera: ", err);
@@ -433,10 +433,10 @@ export default function Home({ user }) {
               {!userJoined ? <h1>User Name</h1> : <h1>{secondUserName}</h1>}
             </div>
 
-            <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
+            <div className="flex  justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
               <video
                 className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
-                ref={videoRef}
+                ref={myVideoRef}
                 autoPlay
                 muted
                 playsInline
@@ -447,7 +447,7 @@ export default function Home({ user }) {
                 //   className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
                 //   src={noSignal}
                 // />
-                <div className="w-full xl:w-1/2  h-full flex flex-col bg-gray-800 justify-center items-center">
+                <div className="w-full xl:w-1/2  h-full flex flex-col bg-gray-800 justify-center items-center rounded-lg">
                   {!userJoined ? (
                     <img
                       src={avatar}
