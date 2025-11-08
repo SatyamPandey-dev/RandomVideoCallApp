@@ -415,6 +415,7 @@ export default function Home({ user }) {
                   className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
                   ref={localVideo}
                   autoPlay
+                  muted
                   playsInline
                 />
               )}
@@ -433,7 +434,7 @@ export default function Home({ user }) {
               )}
             </div>
 
-            <div className="p-4 flex gap-2 justify-center items-center px-2 glass   ">
+            <div className="lg:p-4 p-1 flex gap-2 justify-center items-center px-2 glass   ">
               <button
                 type="button"
                 className="bg-green-600 hover:bg-green-400 px-4 py-2 rounded-lg "
