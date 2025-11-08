@@ -9,7 +9,9 @@ export default function useWebRTC(
   userJoined,
   setUserJoined,
   trackEnded,
-  setTrackEnded
+  setTrackEnded,
+  strongConnection,
+  setStrongConnection
 ) {
   const pc = useRef(null);
   const localVideo = useRef(null);
@@ -292,6 +294,7 @@ export default function useWebRTC(
               try {
                 await pc.current.addIceCandidate(new RTCIceCandidate(data));
                 console.log("✅ Added ICE candidate successfully");
+                setStrongConnection(true);
               } catch (err) {
                 console.error("❌ Error adding ICE:", err);
                 if (!pc.current.remoteDescription) {

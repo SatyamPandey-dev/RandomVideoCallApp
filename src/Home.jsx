@@ -13,6 +13,7 @@ export default function Home({ user }) {
   const [message, setMessage] = useState([]);
   const [secondUserName, setSecondUserName] = useState("");
   const [trackEnded, setTrackEnded] = useState(false);
+  const [strongConnection, setStrongConnection] = useState(false);
 
   const isManualLeaveRef = useRef(false);
 
@@ -23,7 +24,9 @@ export default function Home({ user }) {
     userJoined,
     setUserJoined,
     trackEnded,
-    setTrackEnded
+    setTrackEnded,
+    strongConnection,
+    setStrongConnection
   );
   var count = 0;
 
@@ -36,7 +39,7 @@ export default function Home({ user }) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: false, // audio optional
+          audio: true, // audio optional
         });
 
         if (videoRef.current) {
@@ -362,7 +365,7 @@ export default function Home({ user }) {
         .from("matches")
         .delete()
         .eq("room", joinedRoomId);
-
+      setStrongConnection(false);
       setUserJoined(false);
       setCreatedRoomId(null);
       setJoinedRoomId(null);
@@ -431,25 +434,15 @@ export default function Home({ user }) {
             </div>
 
             <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
-              {!userJoined ? (
-                <video
-                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
-                  ref={videoRef}
-                  autoPlay
-                  muted
-                  playsInline
-                />
-              ) : (
-                <video
-                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
-                  ref={localVideo}
-                  autoPlay
-                  muted
-                  playsInline
-                />
-              )}
-
-              {!userJoined ? (
+              <video
+                className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
+                ref={videoRef}
+                autoPlay
+                muted
+                playsInline
+              />
+              )
+              {!userJoined & !strongConnection ? (
                 // <img
                 //   className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
                 //   src={noSignal}
