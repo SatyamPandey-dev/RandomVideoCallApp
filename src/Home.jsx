@@ -39,7 +39,7 @@ export default function Home({ user }) {
       try {
         const stream = await navigator.mediaDevices.getUserMedia({
           video: true,
-          audio: true, // audio optional
+          audio: false, // audio optional
         });
 
         if (videoRef.current) {
@@ -442,7 +442,7 @@ export default function Home({ user }) {
                 playsInline
               />
               )
-              {!userJoined & !strongConnection ? (
+              {!strongConnection ? (
                 // <img
                 //   className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
                 //   src={noSignal}
