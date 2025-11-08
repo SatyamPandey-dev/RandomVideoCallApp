@@ -1,4 +1,5 @@
 import noSignal from "./assets/noSignal.png";
+import avatar from "./assets/avatar.jpg";
 import { useEffect, useState, useRef } from "react";
 import { supabase } from "./supabaseClient";
 import { v4 as uuidv4 } from "uuid";
@@ -25,6 +26,31 @@ export default function Home({ user }) {
     setTrackEnded
   );
   var count = 0;
+
+  /////////////////////////////////////////////
+
+  const videoRef = useRef(null);
+
+  useEffect(() => {
+    const startCamera = async () => {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({
+          video: true,
+          audio: false, // audio optional
+        });
+
+        if (videoRef.current) {
+          videoRef.current.srcObject = stream;
+        }
+      } catch (err) {
+        console.error("Error accessing camera: ", err);
+      }
+    };
+
+    startCamera();
+  }, []);
+
+  //////////////////////////////////
 
   useEffect(() => {
     if (!createdRoomId) return;
@@ -406,9 +432,12 @@ export default function Home({ user }) {
 
             <div className="flex gap-1 justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
               {!userJoined ? (
-                <img
+                <video
                   className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
-                  src={noSignal}
+                  ref={videoRef}
+                  autoPlay
+                  muted
+                  playsInline
                 />
               ) : (
                 <video
@@ -419,14 +448,32 @@ export default function Home({ user }) {
                   playsInline
                 />
               )}
+
               {!userJoined ? (
-                <img
-                  className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
-                  src={noSignal}
-                />
+                // <img
+                //   className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
+                //   src={noSignal}
+                // />
+                <div className="w-full xl:w-1/2  h-full flex flex-col bg-gray-800 justify-center items-center">
+                  {!userJoined ? (
+                    <img
+                      src={avatar}
+                      className="object-cover rounded-[50%] w-[70px] h-[70px] xl:w-[100px] xl:h-[100px] "
+                      alt="avatar"
+                    />
+                  ) : (
+                    <img
+                      src="https://avatar.iran.liara.run/public"
+                      alt="avatar"
+                      className="object-cover rounded-[50%] w-[70px] h-[70px] xl:w-[100px] xl:h-[100px] "
+                    />
+                  )}
+                  {!userJoined ? <h1>UserName</h1> : <h1>{secondUserName}</h1>}
+                  <p>waiting for connect . . .</p>
+                </div>
               ) : (
                 <video
-                  className="w-full sm:w-1/2 h-full object-cover rounded-2xl"
+                  className="w-full xl:w-1/2 h-full object-cover rounded-2xl"
                   ref={remoteVideo}
                   autoPlay
                   playsInline
