@@ -434,14 +434,24 @@ export default function Home({ user }) {
             </div>
 
             <div className="flex  justify-center items-center  border-[5px] box  w-[300px]  h-[47vh]  sm:w-[670px] sm:h-[370px] rounded-2xl sm:mb-1 z-10 ">
-              <video
-                className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
-                ref={myVideoRef}
-                autoPlay
-                muted
-                playsInline
-              />
-              )
+              {!userJoined ? (
+                <video
+                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
+                  ref={myVideoRef}
+                  autoPlay
+                  muted
+                  playsInline
+                />
+              ) : (
+                <video
+                  className="hidden sm:block  sm:w-1/2 h-full object-cover rounded-2xl"
+                  ref={localVideo}
+                  autoPlay
+                  muted
+                  playsInline
+                />
+              )}
+
               {!strongConnection ? (
                 // <img
                 //   className=" w-full sm:w-1/2 h-full object-cover rounded-2xl"
